@@ -38,7 +38,7 @@ class Database:
             return False
         else:
             return True
-    
+
     def connect(self):
         if self.is_connected() == False:
             try:
@@ -65,12 +65,11 @@ class Database:
         if self.is_connected() == True:
             try:
                 self.__cursor.execute("INSERT INTO Readings (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp) VALUES (%s, %s, %s, %s)",
-                            (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp))
+                                      (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp))
                 self.__connection.commit()
 
             except Exception as e:
                 print(str(e))
-
 
 
 class Board:
@@ -81,10 +80,10 @@ class Board:
 
     def get_hostname(self):
         return self.__hostname
-    
+
     def get_sensors(self):
         return self.__sensors
-    
+
     def get_readings(self):
         return self.__network.get_readings()
 
@@ -151,7 +150,7 @@ class Sensor:
 
     def get_sensor_name(self):
         return self.__sensor_name
-    
+
     def read(self):
         raise NotImplementedError(
             "This method should be overridden in child classes")
