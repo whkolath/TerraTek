@@ -22,7 +22,7 @@ class Config:
         return host, user, password, database
 
 
-class Database:
+class Database_Manager:
     def __init__(self, host, user, password, database_name):
         self.__host = host
         self.__user = user
@@ -114,7 +114,7 @@ class Data_Collector:
         self.__database.close_connection()
 
 
-class Data_Collector_Thread(threading.Thread):
+class Data_Collector_Daemon(threading.Thread):
     def __init__(self, data_collector, delay=1800):
         threading.Thread.__init__(self)
         self.__data_collector = data_collector
@@ -179,7 +179,7 @@ def main():
     config = Config('config.ini')
     host, user, password, database = config.read_database_config()
 
-    TerraTek_db = Database(host, user, password, database)
+    TerraTek_db = Database_Manager(host, user, password, database)
 
     testingboard1 = Board(
         "testingboard1", [SHT31_Temperature(), SHT31_Humidity()])
