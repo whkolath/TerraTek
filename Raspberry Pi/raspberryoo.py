@@ -14,13 +14,11 @@ class Config:
         self.__config = configparser.ConfigParser()
 
     def read_database_config(self):
-
         self.__config.read(self.__config_file)
         host = self.__config.get('Database', 'host')
         user = self.__config.get('Database', 'user')
         password = self.__config.get('Database', 'password')
         database = self.__config.get('Database', 'database')
-
         return host, user, password, database
 
 
@@ -89,29 +87,31 @@ class Board:
 
 
 class Data_Collector:
-    def __init__(self, board, database):
-        self.__board = board
+    def __init__(self, boards, database):
+        self.__boards = boards
         self.__database = database
 
     def read_all(self):
-        r = self.__board.get_readings()
-        if r != None:
-            timestamp = str(datetime.now())
-            self.__database.connect()
-            for sensor in self.__board.get_sensors():
-                self.__database.insert_into_readings(
-                    self.__board.get_hostname(), sensor.get_sensor_name(), sensor.read(r), timestamp)
-            self.__database.close_connection()
+        self.__database.connect()
+        for board in self.__boards:
+            r = board.get_readings()
+            if r != None:
+                timestamp = str(datetime.now())
+                for sensor in board.get_sensors():
+                    self.__database.insert_into_readings(
+                        board.get_hostname(), sensor.get_sensor_name(), sensor.read(r), timestamp)
+        self.__database.close_connection()
 
     def read_sensor(self, sensor_name):
-        r = self.__board.get_readings()
-        if r != None:
-            for sensor in self.__board.get_sensors():
-                if (sensor.get_sensor_name() == sensor_name):
-                    self.__database.connect()
-                    self.__database.insert_into_readings(
-                        self.__board.get_hostname(), sensor.get_sensor_name(), sensor.read(r), str(datetime.now()))
-                    self.__database.close_connection()
+        self.__database.connect()
+        for board in self.__boards:
+            r = board.get_readings()
+            if r != None:
+                for sensor in board.get_sensors():
+                    if (sensor.get_sensor_name() == sensor_name):
+                        self.__database.insert_into_readings(
+                            board.get_hostname(), sensor.get_sensor_name(), sensor.read(r), str(datetime.now()))
+        self.__database.close_connection()
 
 
 class Data_Collector_Thread(threading.Thread):
@@ -161,6 +161,7 @@ class SHT31_Temperature(Sensor):
         super().__init__("SHT31_Temperature")
 
     def read(self, r):
+        print(r["temperature"])
         return r["temperature"]
 
 
@@ -169,6 +170,7 @@ class SHT31_Humidity(Sensor):
         super().__init__("SHT31_Humidity")
 
     def read(self, r):
+        print(r["humidity"])
         return r["humidity"]
 
 
