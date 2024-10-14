@@ -184,10 +184,10 @@ def main():
     testingboard1 = Board(
         "testingboard1", [SHT31_Temperature(), SHT31_Humidity()])
 
-    testingboard1_collector = Data_Collector([testingboard1], TerraTek_db)
-    testingboard1_thread = Data_Collector_Daemon(testingboard1_collector, 5)
+    board1_collector = Data_Collector([testingboard1], TerraTek_db)
+    board1_daemon = Data_Collector_Daemon(board1_collector, 5)
 
-    testingboard1_thread.start()
+    board1_daemon.start()
 
     try:
         while True:
