@@ -71,13 +71,13 @@ class Database_Manager:
 
 
 class Board:
-    def __init__(self, hostname, sensors):
-        self.__hostname = hostname
+    def __init__(self, board_id, sensors):
+        self.__board_id = board_id
         self.__sensors = sensors
-        self.__network = Network_Connection(self.__hostname)
+        self.__network = Networking_Manager(self.__board_id)
 
-    def get_hostname(self):
-        return self.__hostname
+    def get_board_id(self):
+        return self.__board_id
 
     def get_sensors(self):
         return self.__sensors
@@ -91,7 +91,7 @@ class Data_Collector:
         self.__boards = boards
         self.__database = database
 
-    def read_all(self):
+    def collect_all(self):
         self.__database.connect()
         for board in self.__boards:
             r = board.get_readings()
@@ -99,10 +99,10 @@ class Data_Collector:
                 timestamp = str(datetime.now())
                 for sensor in board.get_sensors():
                     self.__database.insert_into_readings(
-                        board.get_hostname(), sensor.get_sensor_name(), sensor.read(r), timestamp)
+                        board.get_board_id(), sensor.get_sensor_name(), sensor.read(r), timestamp)
         self.__database.close_connection()
 
-    def read_sensor(self, sensor_name):
+    def collect_sensor(self, sensor_name):
         self.__database.connect()
         for board in self.__boards:
             r = board.get_readings()
@@ -110,7 +110,7 @@ class Data_Collector:
                 for sensor in board.get_sensors():
                     if (sensor.get_sensor_name() == sensor_name):
                         self.__database.insert_into_readings(
-                            board.get_hostname(), sensor.get_sensor_name(), sensor.read(r), str(datetime.now()))
+                            board.get_board_id(), sensor.get_sensor_name(), sensor.read(r), str(datetime.now()))
         self.__database.close_connection()
 
 
@@ -124,12 +124,12 @@ class Data_Collector_Daemon(threading.Thread):
     def run(self):
         while True:
             thread_lock.acquire()
-            self.__data_collector.read_all()
+            self.__data_collector.collect_all()
             thread_lock.release()
             sleep(self.__delay)
 
 
-class Network_Connection:
+class Networking_Manager:
     def __init__(self, hostname):
         self.__hostname = hostname
 
@@ -150,10 +150,6 @@ class Sensor:
 
     def get_sensor_name(self):
         return self.__sensor_name
-
-    def read(self):
-        raise NotImplementedError(
-            "This method should be overridden in child classes")
 
 
 class SHT31_Temperature(Sensor):
