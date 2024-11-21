@@ -1,35 +1,26 @@
-
 #include <Arduino_MKRENV.h>
-#include "SparkFun_Weather_Meter_Kit_Arduino_Library.h"
+#include <SparkFun_Weather_Meter_Kit_Arduino_Library.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <MKRWAN.h>
 
-// Data wire is plugged into port 2 on the Arduino
-#define ONE_WIRE_BUS 0
+LoRaModem modem;
 
-// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
-OneWire oneWire(ONE_WIRE_BUS);
-
-// Pass our oneWire reference to Dallas Temperature.
-DallasTemperature sensors(&oneWire);
-
-// Below are the pin definitions for each sensor of the weather meter kit
-// Pins for the Arduino Uno
 const int windDirectionPin = A1;
-const int windSpeedPin = 5;
+const int temp_sensor = 0;
 const int rainfallPin = 1;
 const int echo = 2;
 const int trig = 3;
-
+const int windSpeedPin = 5;
 
 double duration = 0;
 double distance = 0;
 
-// Create an instance of the weather meter kit
 SFEWeatherMeterKit weatherMeterKit(windDirectionPin, windSpeedPin, rainfallPin);
+OneWire oneWire(temp_sensor);
 
+DallasTemperature sensors(&oneWire);
 
-// Variables to store rainfall data
 float lastRainfall = 0.0;
 unsigned long lastTime = 0;
 
@@ -47,30 +38,27 @@ float convertMmToInches(float mm) {
 void setup() {
   Serial.begin(9600);
 
-
   pinMode(echo, INPUT);
   pinMode(trig, OUTPUT);
 
-  while (!Serial)
-    ;
+  if (!modem.begin(US915)) {
+    Serial.println("Failed to start module");
+    while (1) {}
+  };
+  Serial.print("Your module version is: ");
+  Serial.println(modem.version());
+  Serial.print("Your device EUI is: ");
+  Serial.println(modem.deviceEUI());
 
-  if (!ENV.begin()) {
-    Serial.println("Failed to initialize MKR ENV Shield!");
-    while (1)
-      ;
+  int connected = modem.joinOTAA(appEui, appKey);
+  if (!connected) {
+    Serial.println("Something went wrong; are you indoor? Move near a window and retry");
+    while (1) {}
   }
-
-#ifdef SFE_WMK_PLAFTORM_UNKNOWN
-  weatherMeterKit.setADCResolutionBits(10);
-
-  Serial.println(F("Unknown Signal"));
-  Serial.println();
-#endif
 
   // Begin weather meter kit
   weatherMeterKit.begin();
   lastTime = millis();  // Initialize last time
-
 
   sensors.begin();
 }
@@ -173,7 +161,18 @@ void loop() {
   Serial.print("Distance: ");
   Serial.print(distance);
   Serial.println("CM");
+  modem.beginPacket();
+  modem.print(msg);
 
+  
+  err = modem.endPacket(true);
+  if (err > 0) {
+    Serial.println("Message sent correctly!");
+  } else {
+    Serial.println("Error sending message :(");
+    Serial.println("(you may send a limited amount of messages per minute, depending on the signal strength");
+    Serial.println("it may vary from 1 message every couple of seconds to 1 message every minute)");
+  }
 
   // wait 1 second to print again
   delay(1000);
