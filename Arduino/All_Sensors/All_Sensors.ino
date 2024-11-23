@@ -38,7 +38,7 @@ float convertMmToInches(float mm) {
   return mm * 0.0393701;
 }
 
-void LoRaWAN_send(char SID, char error, double reading)
+bool LoRaWAN_send(char SID, char error, double reading)
 {
   modem.beginPacket();
   modem.write(SID);
@@ -47,12 +47,15 @@ void LoRaWAN_send(char SID, char error, double reading)
 
   int err;
   err = modem.endPacket(true);
-  if (err > 0) {
+  if (err > 0) 
+  {
     Serial.println("Message sent correctly!");
-  } else {
-    Serial.println("Error sending message :(");
-    Serial.println("(you may send a limited amount of messages per minute, depending on the signal strength");
-    Serial.println("it may vary from 1 message every couple of seconds to 1 message every minute)");
+    return false;
+  } 
+  else 
+  {
+    Serial.println("Error sending message.");
+    return true;
   }
 }
 
@@ -62,7 +65,8 @@ void setup() {
   // pinMode(echo, INPUT);
   // pinMode(trig, OUTPUT);
 
-  if (!modem.begin(US915)) {
+  if (!modem.begin(US915)) 
+  {
     Serial.println("Failed to start module");
     while (1) {}
   };
@@ -184,7 +188,7 @@ void loop() {
   // Serial.println("CM");
 
 
-  char SID = 0x01;
+  char SID = 0x01; //Sensor ID, you can find the right one in the database
   char error = 0x00;
   double reading = 25.666;
 
