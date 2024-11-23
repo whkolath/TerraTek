@@ -38,6 +38,23 @@ float convertMmToInches(float mm) {
   return mm * 0.0393701;
 }
 
+void LoRaWAN_send(char SID, char error, double reading)
+{
+  modem.beginPacket();
+  modem.write(SID);
+  modem.write(error);
+  modem.write(reading);
+
+  int err;
+  err = modem.endPacket(true);
+  if (err > 0) {
+    Serial.println("Message sent correctly!");
+  } else {
+    Serial.println("Error sending message :(");
+    Serial.println("(you may send a limited amount of messages per minute, depending on the signal strength");
+    Serial.println("it may vary from 1 message every couple of seconds to 1 message every minute)");
+  }
+}
 
 void setup() {
   Serial.begin(9600);
@@ -165,26 +182,14 @@ void loop() {
   // Serial.print("Distance: ");
   // Serial.print(distance);
   // Serial.println("CM");
+
+
   char SID = 0x01;
   char error = 0x00;
 
   double reading = 25.666;
 
-  modem.beginPacket();
-  modem.write(SID);
-  modem.write(error);
-  modem.write(reading);
+  LoRaWAN_send(SID, error, reading);
 
-  int err;
-  err = modem.endPacket(true);
-  if (err > 0) {
-    Serial.println("Message sent correctly!");
-  } else {
-    Serial.println("Error sending message :(");
-    Serial.println("(you may send a limited amount of messages per minute, depending on the signal strength");
-    Serial.println("it may vary from 1 message every couple of seconds to 1 message every minute)");
-  }
-
-  // wait 1 second to print again
   delay(10000);
 }

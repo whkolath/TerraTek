@@ -73,10 +73,8 @@ class Database_Manager:
 
 
 class Data_Collector(BaseHTTPRequestHandler):
-    def __init__(self, *args, database=None, **kwargs):
-        self.__database = database
-        self.json = False
-        super().__init__(*args, **kwargs)
+    json = False
+    global TerraTek_db
 
     def do_POST(self):
         self.send_response(200)
@@ -89,57 +87,31 @@ class Data_Collector(BaseHTTPRequestHandler):
         if query_args["event"][0] == "up":
             self.up(body)
 
-        elif query_args["event"][0] == "join":
-            self.join(body)
-
-        else:
-            print("handler for event %s is not implemented" %
-                  query_args["event"][0])
-
     def up(self, body):
-        up = self.unmarshal(body, integration.UplinkEvent())
+        up = integration.UplinkEvent()
+        up.ParseFromString(body)
+
         data = up.data.hex(' ').split()
         SID = data[0]
         error = data[1]
         reading = struct.unpack('>d', int("".join(data[2:10]), 16).to_bytes(8, 'little'))[0]
 
-        print(f"The double value is: {reading}")
+        print("Uplink received from: %s with SID: %s, error: %s, reading: %s" %
+              (up.device_info.dev_eui, SID, error, reading))
 
-        print("Uplink received from: %s with payload: %s" %
-              (up.device_info.dev_eui, data))
-
-
-        print(SID, error, reading)
-
-        self.__database.connect()
-        self.__database.insert_into_readings(up.device_info.dev_eui, SID, reading, str(datetime.now()))
-        self.__database.close_connection()
-
-    def join(self, body):
-        join = self.unmarshal(body, integration.JoinEvent())
-        print("Device: %s joined with DevAddr: %s" %
-              (join.device_info.dev_eui, join.dev_addr))
-
-    def unmarshal(self, body, pl):
-        if self.json:
-            return Parse(body, pl)
-
-        pl.ParseFromString(body)
-        return pl
-
-
-def handler_factory(database):
-    def handler(*args, **kwargs):
-        return Data_Collector(*args, database=database, **kwargs)
-    return handler
+        TerraTek_db.connect()
+        TerraTek_db.insert_into_readings(up.device_info.dev_eui, SID, reading, str(datetime.now()))
+        TerraTek_db.close_connection()
 
 
 def main():
     config = Config('config.ini')
     host, user, password, database = config.read_database_config()
-
+    
+    global TerraTek_db
     TerraTek_db = Database_Manager(host, user, password, database)
-    httpd = HTTPServer(('', 8090), handler_factory(TerraTek_db))
+
+    httpd = HTTPServer(('', 8090), Data_Collector)
     httpd.serve_forever()
 
 
