@@ -186,7 +186,6 @@ void loop() {
 
   char SID = 0x01;
   char error = 0x00;
-
   double reading = 25.666;
 
   LoRaWAN_send(SID, error, reading);
