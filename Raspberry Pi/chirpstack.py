@@ -61,11 +61,11 @@ class Database_Manager:
             self.__cursor = None
             self.__connection = None
 
-    def insert_into_readings(self, Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp):
+    def insert_into_readings(self, Board_ID, Sensor_ID, Error_ID, Sensor_Value, Sensor_Timestamp):
         if self.is_connected() == True:
             try:
-                self.__cursor.execute("INSERT INTO Readings (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp) VALUES ('0x%s', 0x%s, %s, '%s')" %
-                                      (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp))
+                self.__cursor.execute("INSERT INTO Readings (Board_ID, Sensor_ID, Error_ID, Sensor_Value, Sensor_Timestamp) VALUES ('0x%s', 0x%s, 0x%s, %s, '%s')" %
+                                      (Board_ID, Sensor_ID, Error_ID, Sensor_Value, Sensor_Timestamp))
                 self.__connection.commit()
 
             except Exception as e:
@@ -93,21 +93,21 @@ class Data_Collector(BaseHTTPRequestHandler):
 
         data = up.data.hex(' ').split()
         SID = data[0]
-        error = data[1]
+        error_ID = data[1]
         reading = struct.unpack('>d', int("".join(data[2:10]), 16).to_bytes(8, 'little'))[0]
 
-        print("Uplink received from: %s with SID: %s, error: %s, reading: %s" %
-              (up.device_info.dev_eui, SID, error, reading))
+        print("Uplink received from: 0x%s with SID: 0x%s, error: 0x%s, reading: %s" %
+              (up.device_info.dev_eui, SID, error_ID, reading))
 
         TerraTek_db.connect()
-        TerraTek_db.insert_into_readings(up.device_info.dev_eui, SID, reading, str(datetime.now()))
+        TerraTek_db.insert_into_readings(up.device_info.dev_eui, SID, error_ID, reading, str(datetime.now()))
         TerraTek_db.close_connection()
 
 
 def main():
     config = Config('config.ini')
     host, user, password, database = config.read_database_config()
-    
+
     global TerraTek_db
     TerraTek_db = Database_Manager(host, user, password, database)
 
