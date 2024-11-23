@@ -3,11 +3,11 @@ from urllib.parse import urlparse, parse_qs
 
 from chirpstack_api import integration
 from google.protobuf.json_format import Parse
-from time import sleep
 from datetime import datetime
 import pymysql
-import threading
 import configparser
+
+import struct
 
 
 class Config:
@@ -64,13 +64,12 @@ class Database_Manager:
     def insert_into_readings(self, Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp):
         if self.is_connected() == True:
             try:
-                self.__cursor.execute("INSERT INTO Readings (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp) VALUES (%s, %s, %s, %s)",
+                self.__cursor.execute("INSERT INTO Readings (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp) VALUES ('0x%s', 0x%s, %s, '%s')" %
                                       (Board_ID, Sensor_ID, Sensor_Value, Sensor_Timestamp))
                 self.__connection.commit()
 
             except Exception as e:
                 print(str(e))
-
 
 
 class Data_Collector(BaseHTTPRequestHandler):
@@ -94,26 +93,40 @@ class Data_Collector(BaseHTTPRequestHandler):
             self.join(body)
 
         else:
-            print("handler for event %s is not implemented" % query_args["event"][0])
+            print("handler for event %s is not implemented" %
+                  query_args["event"][0])
 
     def up(self, body):
         up = self.unmarshal(body, integration.UplinkEvent())
-        print("Uplink received from: %s with payload: %s" % (up.device_info.dev_eui, up.data.hex()))
+        data = up.data.hex(' ').split()
+        SID = data[0]
+        error = data[1]
+        reading = struct.unpack('>d', int("".join(data[2:10]), 16).to_bytes(8, 'little'))[0]
+
+        print(f"The double value is: {reading}")
+
+        print("Uplink received from: %s with payload: %s" %
+              (up.device_info.dev_eui, data))
+
+
+        print(SID, error, reading)
+
         self.__database.connect()
-        self.__database.insert_into_readings(up.device_info.dev_eui, "SHT31_Temperature", int(up.data.hex(), 16), str(datetime.now()))
+        self.__database.insert_into_readings(up.device_info.dev_eui, SID, reading, str(datetime.now()))
         self.__database.close_connection()
 
     def join(self, body):
         join = self.unmarshal(body, integration.JoinEvent())
-        print("Device: %s joined with DevAddr: %s" % (join.device_info.dev_eui, join.dev_addr))
+        print("Device: %s joined with DevAddr: %s" %
+              (join.device_info.dev_eui, join.dev_addr))
 
     def unmarshal(self, body, pl):
         if self.json:
             return Parse(body, pl)
-        
+
         pl.ParseFromString(body)
         return pl
-    
+
 
 def handler_factory(database):
     def handler(*args, **kwargs):
@@ -122,13 +135,13 @@ def handler_factory(database):
 
 
 def main():
-
     config = Config('config.ini')
     host, user, password, database = config.read_database_config()
 
     TerraTek_db = Database_Manager(host, user, password, database)
     httpd = HTTPServer(('', 8090), handler_factory(TerraTek_db))
     httpd.serve_forever()
+
 
 if __name__ == "__main__":
     main()

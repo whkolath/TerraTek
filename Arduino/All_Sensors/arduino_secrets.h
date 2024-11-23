@@ -1,2 +1,2 @@
-#define SECRET_APP_EUI "xxxxxxxxxxxxx"
-#define SECRET_APP_KEY "yyyyyyyyyyyyyyyyyyyyyyy"
+#define SECRET_APP_EUI "0000000000000000"
+#define SECRET_APP_KEY "4acdbb110af69d21a43210c019ab3f61"
