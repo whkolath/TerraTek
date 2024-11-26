@@ -3,5 +3,6 @@ terra-tek-website/node_modules
 
 terratek_api/node_modules
 terratek_api/.env
+.vscode
 
 *.ini
