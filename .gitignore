@@ -1,8 +1,8 @@
-terra-tek-website/.next
-terra-tek-website/node_modules
+TerraTek_Website/.next
+TerraTek_Website/node_modules
 
-terratek_api/node_modules
-terratek_api/.env
+TerraTek_API/node_modules
+TerraTek_API/.env
 .vscode
 
 *.ini
