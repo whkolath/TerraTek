@@ -1,1 +1,9 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+terra-tek-website/.next
+terra-tek-website/node_modules
+
+terratek_api/node_modules
+terratek_api/.env
+
 *.ini
