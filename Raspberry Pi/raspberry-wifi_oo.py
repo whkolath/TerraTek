@@ -135,9 +135,10 @@ class Networking_Manager:
 
     def get_readings(self):
         try:
-            r = requests.get(f"http://{self.__hostname}.local", timeout=5)
-            r.raise_for_status()
-            return r.json()
+            #r = requests.get(f"http://{self.__hostname}.local", timeout=5)
+            #r.raise_for_status()
+            #return r.json()
+            return 1
 
         except Exception as e:
             print(str(e))
@@ -157,8 +158,10 @@ class SHT31_Temperature(Sensor):
         super().__init__("SHT31_Temperature")
 
     def read(self, r):
-        print(r["temperature"])
-        return r["temperature"]
+        # print(r["temperature"])
+        # return r["temperature"]
+        print("Temp")
+        return 22
 
 
 class SHT31_Humidity(Sensor):
@@ -166,9 +169,10 @@ class SHT31_Humidity(Sensor):
         super().__init__("SHT31_Humidity")
 
     def read(self, r):
-        print(r["humidity"])
-        return r["humidity"]
-
+        # print(r["humidity"])
+        # return r["humidity"]
+        print("humidity")
+        return 23
 
 def main():
 
