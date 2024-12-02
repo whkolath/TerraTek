@@ -1,43 +1,164 @@
-#include <Arduino_MKRENV.h>
-#include <SparkFun_Weather_Meter_Kit_Arduino_Library.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 #include <MKRWAN.h>
 #include "arduino_secrets.h"
+#include "DFRobot_RainfallSensor.h"
+#include <Arduino_MKRENV.h>
+#include "SparkFun_Weather_Meter_Kit_Arduino_Library.h"
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include "sensor_ids.h"
+#include <Wire.h>
+#include <SparkFun_External_EEPROM.h>
 
+// LoRaWAN credentials are stored in arduino_secrets.h
 String appEui = SECRET_APP_EUI;
 String appKey = SECRET_APP_KEY;
 
+// Constants
+#define EEPROM_ADDRESS 0x50     // I2C address of the 24FC512 EEPROM
+#define PH_SENSOR_PIN A2        // Analog pin for the pH sensor
+#define EC_SENSOR_PIN A0        // Analog pin for the EC sensor
+#define TEMP_SENSOR_PIN 2       // Digital pin for the DS18B20 sensor
+
+// EEPROM object
+ExternalEEPROM eeprom;
+
+// Variables for EC and pH calibration
+double ecKConstant = 1.0;         // Default EC sensor calibration constant
+const double TEMP_COEFFICIENT = 0.02; // Temperature coefficient for EC correction
+const double V_REF = 3.3;         // Reference voltage for MKR WAN 1310
+const int ADC_RES_BITS = 4095;   // 12-bit ADC resolution (renamed to avoid conflict)
+
+// Initialize the LoRaWAN modem
 LoRaModem modem;
 
+// Data wire is plugged into port 2 on the Arduino
+#define ONE_WIRE_BUS 0
+
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature.
+DallasTemperature sensors(&oneWire);
+
+// Below are the pin definitions for each sensor of the weather meter kit
 const int windDirectionPin = A1;
-const int temp_sensor = 0;
+const int windSpeedPin = 5;
 const int rainfallPin = 1;
 const int echo = 2;
 const int trig = 3;
-const int windSpeedPin = 5;
+
+// Create an instance of the weather meter kit
+SFEWeatherMeterKit weatherMeterKit(windDirectionPin, windSpeedPin, rainfallPin);
+
+// Rainfall sensor via I2C
+DFRobot_RainfallSensor_I2C Sensor(&Wire);
+
+// Error codes
+const char NO_ERROR = 0x00;
+const char ERROR_SENSOR_DISCONNECTED = 0x01;
+
+// Variables to store error states
+char windSpeedError = NO_ERROR;
+char windDirectionError = NO_ERROR;
+char rainfallError = NO_ERROR;
 
 double duration = 0;
 double distance = 0;
 
-SFEWeatherMeterKit weatherMeterKit(windDirectionPin, windSpeedPin, rainfallPin);
-OneWire oneWire(temp_sensor);
-
-DallasTemperature sensors(&oneWire);
-
-float lastRainfall = 0.0;
+// Variables to store rainfall data
+double lastRainfall = 0.0;
 unsigned long lastTime = 0;
 
 // Function to convert kph to mph
-float convertKphToMph(float kph) {
+double convertKphToMph(double kph)
+{
   return kph * 0.621371;
 }
 
 // Function to convert mm to inches
-float convertMmToInches(float mm) {
+double convertMmToInches(double mm)
+{
   return mm * 0.0393701;
 }
 
+// void logError(const char *sensorName, int errorCode)
+// {
+//   if (errorCode != NO_ERROR)
+//   {
+//     Serial.print(sensorName);
+//     Serial.print(" Error Code: ");
+//     Serial.println(errorCode, HEX); // Print error code in hexadecimal
+//   }
+// }
+
+
+// Function to read data from the pH sensor
+float readPHSensor() {
+  int sensorValue = analogRead(PH_SENSOR_PIN); // Read the analog value
+  float voltage = sensorValue * (V_REF / ADC_RES_BITS); // Convert ADC value to voltage
+  float current = voltage / 100.0 * 1000; // Calculate current in mA (Ohm's Law)
+  float pH = (current - 4.0) * (14.0 / 16.0); // Convert current to pH value
+  return pH;
+}
+
+// Function to read data from the EC sensor
+float readECSensor() {
+  int analogValue = analogRead(EC_SENSOR_PIN); // Read the analog voltage
+  float voltage = analogValue * (V_REF / ADC_RES_BITS); // Convert to voltage
+  float ec = voltage * ecKConstant; // Convert voltage to EC using calibration constant
+  return ec;
+}
+
+// Function to correct EC value for temperature
+float correctEC(float ec, float temperature) {
+  return ec / (1 + TEMP_COEFFICIENT * (temperature - 25.0));
+}
+
+// Function to read temperature from DS18B20
+float readTemperature() {
+  ds18b20.requestTemperatures();            // Request temperature readings
+  return ds18b20.getTempCByIndex(0);        // Get temperature in Celsius
+}
+
+// Function to load EC calibration data from EEPROM
+void loadECCalibration() {
+  ecKConstant = readFloatFromEEPROM(0); // Read EC calibration constant from EEPROM
+  Serial.print("Loaded EC Calibration Constant: "); Serial.println(ecKConstant);
+}
+
+// Function to save EC calibration data to EEPROM
+void saveECCalibration(float newKConstant) {
+  ecKConstant = newKConstant; // Update the calibration constant
+  writeFloatToEEPROM(0, ecKConstant); // Save to EEPROM at address 0
+  Serial.print("Saved EC Calibration Constant to EEPROM: "); Serial.println(ecKConstant);
+}
+
+// Example function to perform EC calibration (call during calibration)
+void performECCalibration(float measuredVoltage, float knownEC) {
+  // Calculate the new calibration constant
+  float newKConstant = knownEC / measuredVoltage;
+  saveECCalibration(newKConstant); // Save the new constant to EEPROM
+}
+
+// Helper function to write a float to EEPROM
+void writeFloatToEEPROM(uint16_t address, float value) {
+  byte* data = (byte*)&value;
+  for (int i = 0; i < sizeof(float); i++) {
+    eeprom.write(address + i, data[i]);
+  }
+}
+
+// Helper function to read a float from EEPROM
+float readFloatFromEEPROM(uint16_t address) {
+  float value = 0.0;
+  byte* data = (byte*)&value;
+  for (int i = 0; i < sizeof(float); i++) {
+    data[i] = eeprom.read(address + i);
+  }
+  return value;
+}
+
+// Function to send data over LoRaWAN
 bool LoRaWAN_send(char SID, char error, double reading)
 {
   modem.beginPacket();
@@ -47,152 +168,208 @@ bool LoRaWAN_send(char SID, char error, double reading)
 
   int err;
   err = modem.endPacket(true);
-  if (err > 0) 
+  if (err > 0)
   {
     Serial.println("Message sent correctly!");
+    delay(1000); // Delay to avoid overcrowding the network
     return false;
-  } 
-  else 
+  }
+  else
   {
     Serial.println("Error sending message.");
     return true;
   }
 }
 
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
 
-  // pinMode(echo, INPUT);
-  // pinMode(trig, OUTPUT);
+  // Initialize the rainfall sensor
+  delay(1000);
+  while (!Sensor.begin())
+  {
+    Serial.println("Rainfall Sensor init err!!!");
+    rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
+    delay(1000);
+  }
 
-  if (!modem.begin(US915)) 
+  // Initialize the weather meter kit
+  weatherMeterKit.begin();
+
+  // Initialize temperature sensors
+  sensors.begin();
+
+  // Set up the pins
+  pinMode(echo, INPUT);
+  pinMode(trig, OUTPUT);
+
+  // Initialize MKR ENV Shield
+  if (!ENV.begin())
+  {
+    Serial.println("Failed to initialize MKR ENV Shield!");
+    while (1)
+      ;
+  }
+
+    // Set ADC resolution to 12 bits
+  analogReadResolution(12);
+
+  // Initialize DS18B20 temperature sensor
+  ds18b20.begin();
+
+  Wire.begin();
+
+  // Initialize EEPROM
+  Serial.println("Initializing EEPROM...");
+if (eeprom.begin() != 0) {
+  Serial.println("EEPROM initialization failed!");
+} else {
+  Serial.println("EEPROM initialized successfully.");
+}
+
+
+  // Initialize LoRaWAN
+  if (!modem.begin(US915))
   {
     Serial.println("Failed to start module");
-    while (1) {}
+    while (1)
+      ;
   };
-  // Serial.print("Your module version is: ");
-  // Serial.println(modem.version());
-  // Serial.print("Your device EUI is: ");
-  // Serial.println(modem.deviceEUI());
 
-
-  // // Begin weather meter kit
-  // weatherMeterKit.begin();
-  // lastTime = millis();  // Initialize last time
-
-  // sensors.begin();
+  // Connect to the LoRaWAN network
   int connected = false;
-  do {
+  do
+  {
     Serial.println("Attempting to connect");
     connected = modem.joinOTAA(appEui, appKey);
   } while (!connected);
 }
 
-void loop() {
-  // Serial.print("Requesting temperatures...");
-  // sensors.requestTemperatures();  // Send the command to get temperatures
-  // Serial.println("DONE");
-  // // After we got the temperatures, we can print them here.
-  // // We use the function ByIndex, and as an example get the temperature from the first sensor only.
-  // float tempC = sensors.getTempCByIndex(0);
+void loop()
+{
+  // --- Temperature Sensors ---
+  sensors.requestTemperatures();
+  double tempC = sensors.getTempCByIndex(0);
 
-  // // Check if reading was successful
-  // if (tempC != DEVICE_DISCONNECTED_C) {
-  //   Serial.print("Temperature for the device 1 (index 0) is: ");
-  //   Serial.println(tempC);
-  // } else {
-  //   Serial.println("Error: Could not read temperature data");
-  // }
-  // // Get the current wind speed and total rainfall
-  // float windSpeedKph = weatherMeterKit.getWindSpeed();
-  // float windSpeedMph = convertKphToMph(windSpeedKph);
+  if (tempC != DEVICE_DISCONNECTED_C)
+  {
+    Serial.print("Temperature: ");
+    Serial.println(tempC);
+  }
+  else
+  {
+    Serial.println("Error: Could not read temperature data");
+  }
 
-  // // Calculate rainfall rate in inches per minute
-  // float currentRainfall = weatherMeterKit.getTotalRainfall();
-  // unsigned long currentTime = millis();
-  // float timeDifference = (currentTime - lastTime) / 60000.0;  // Convert ms to minutes
+  LoRaWAN_send(DS18B2_Temperature_Probe, 0x00, tempC)
 
-  // // Check for time difference to avoid division by zero
-  // float rainfallRateInchesPerMin = 0.0;
-  // if (timeDifference > 0) {
-  //   float rainfallDifference = currentRainfall - lastRainfall;
-  //   rainfallRateInchesPerMin = convertMmToInches(rainfallDifference) / timeDifference;
-  // }
+  // Read EC sensor data and apply temperature correction
+  double ec = readECSensor();
+  double ecCorrected = correctEC(ec, tempC);
+  Serial.print("EC Value: "); Serial.println(ec);
+  Serial.print("Corrected EC Value: "); Serial.println(ecCorrected);
 
-  // // Update last recorded values
-  // lastRainfall = currentRainfall;
-  // lastTime = currentTime;
+  LoRaWAN_send(DFR_Conductivity_Meter, 0x00, ecCorrected)
 
-  // // Print data from weather meter kit
-  // Serial.print(F("Wind direction (degrees): "));
-  // Serial.print(weatherMeterKit.getWindDirection(), 1);
-  // Serial.print(F("\t\t"));
-  // Serial.print(F("Wind speed (kph): "));
-  // Serial.print(windSpeedKph, 1);
-  // Serial.print(F("\t\t"));
-  // Serial.print(F("Wind speed (mph): "));
-  // Serial.print(windSpeedMph, 1);
-  // Serial.print(F("\t\t"));
-  // Serial.print(F("Rainfall rate (inches/min): "));
-  // Serial.println(rainfallRateInchesPerMin, 4);
+  // Read pH sensor data
+  double pH_val = readPHSensor();
+  Serial.print("pH Value: "); Serial.println(pH);
 
-  // // read all the sensor values
-  // float temperature = ENV.readTemperature();
-  // float humidity = ENV.readHumidity();
-  // float pressure = ENV.readPressure();
-  // float illuminance = ENV.readIlluminance();
-  // float uva = ENV.readUVA();
-  // float uvb = ENV.readUVB();
-  // float uvIndex = ENV.readUVIndex();
+  LoRaWAN_send(PH, 0x00, pH_val)
 
-  // // print each of the sensor values
-  // Serial.print("Temperature = ");
-  // Serial.print(temperature);
-  // Serial.println(" °C");
+  // --- Wind Speed ---
+  double windSpeedKph = weatherMeterKit.getWindSpeed();
+  if (windSpeedKph < 0)
+  {
+    windSpeedError = ERROR_SENSOR_DISCONNECTED; // Error if sensor is disconnected
+    Serial.println("Error: Wind speed sensor disconnected!");
+  }
+  else
+  {
+    windSpeedError = NO_ERROR; // No error
+    Serial.print("Wind Speed (kph): ");
+    Serial.println(windSpeedKph);
+    Serial.print("Wind Speed (mph): ");
+    Serial.println(convertKphToMph(windSpeedKph));
+  }
 
-  // Serial.print("Humidity    = ");
-  // Serial.print(humidity);
-  // Serial.println(" %");
+  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Speed, windSpeedError, windSpeedKph)
 
-  // Serial.print("Pressure    = ");
-  // Serial.print(pressure);
-  // Serial.println(" kPa");
+  // --- Wind Direction ---
+  double windDirection = weatherMeterKit.getWindDirection();
+  if (windDirection < 0)
+  {
+    windDirectionError = ERROR_SENSOR_DISCONNECTED; // Error if sensor is disconnected
+    Serial.println("Error: Wind direction sensor disconnected!");
+  }
+  else
+  {
+    windDirectionError = NO_ERROR; // No error
+    Serial.print("Wind Direction (degrees): ");
+    Serial.println(windDirection);
+  }
 
-  // Serial.print("Illuminance = ");
-  // Serial.print(illuminance);
-  // Serial.println(" lx");
+  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Direction, windDirectionError, windDirection)
 
-  // Serial.print("UVA         = ");
-  // Serial.println(uva);
+      // --- Rainfall ---
+      double rainfall = Sensor.getRainfall();
+  if (rainfall == -1)
+  {
+    rainfallError = ERROR_SENSOR_DISCONNECTED; // Error if sensor is disconnected
+    Serial.println("Error: Rainfall sensor disconnected!");
+  }
+  else
+  {
+    rainfallError = NO_ERROR; // No error
+    Serial.print("Rainfall (mm): ");
+    Serial.println(rainfall);
+  }
 
-  // Serial.print("UVB         = ");
-  // Serial.println(uvb);
+  LoRaWAN_send(DFR_Weather_Meter_Rainfall, rainfallError, tempC)
 
-  // Serial.print("UV Index    = ");
-  // Serial.println(uvIndex);
+  // --- ENV Shield ---
+  Serial.print("Temperature = ");
+  Serial.print(ENV.readTemperature());
+  Serial.println(" °C");
 
-  // // print an empty line
-  // Serial.println();
-  // digitalWrite(trig, LOW);
-  // delay(2);
-  // digitalWrite(trig, HIGH);
-  // delay(10);
-  // digitalWrite(trig, LOW);
+  LoRaWAN_send(MKR_Environmental_Shield_Temperature, 0x00, ENV.readTemperature())
 
-  // duration = pulseIn(echo, HIGH);
+      Serial.print("Humidity = ");
+  Serial.print(ENV.readHumidity());
+  Serial.println(" %");
 
-  // distance = (duration * .0343) / 2;
+  LoRaWAN_send(MKR_Environmental_Shield_Humidity, 0x00, ENV.readHumidity())
 
-  // Serial.print("Distance: ");
-  // Serial.print(distance);
-  // Serial.println("CM");
+  Serial.print("Pressure = ");
+  Serial.print(ENV.readPressure());
+  Serial.println(" kPa");
 
+  LoRaWAN_send(MKR_Environmental_Shield_Barometric_Pressure, 0x00, ENV.readPressure())
 
-  char SID = 0x01; //Sensor ID, you can find the right one in the database
-  char error = 0x00;
-  double reading = 25.666;
+  Serial.print("Illuminance = ");
+  Serial.print(ENV.readIlluminance());
+  Serial.println(" lx");
 
-  LoRaWAN_send(SID, error, reading);
+  LoRaWAN_send(MKR_Environmental_Shield_Illuminance, 0x00, ENV.readIlluminance())
 
-  delay(10000);
+  // --- Ultrasonic Distance Sensor ---
+  digitalWrite(trig, LOW);
+  delay(2);
+  digitalWrite(trig, HIGH);
+  delay(10);
+  digitalWrite(trig, LOW);
+
+  duration = pulseIn(echo, HIGH);
+  distance = (duration * 0.0343) / 2;
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" CM");
+
+  LoRaWAN_send(DFR_Ultrasonic_Distance, 0x00, distance)
+
+  // Log errors if any
+  // logError("Wind Speed Sensor", windSpeedError);
+  // logError("Wind Direction Sensor", windDirectionError);
+  // logError("Rainfall Sensor", rainfallError);
 }

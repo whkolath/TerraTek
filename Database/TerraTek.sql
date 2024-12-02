@@ -65,7 +65,7 @@ VALUES  ("0xa8610a34362d800f", "WTAMU Campus" );
 -- ************************Sensors************************
 -- Temperature Probe
 INSERT INTO Sensors  (Sensor_ID, Sensor_Description, Units)
-VALUES  (0x01, "DS18B2 Temperature Probe", "Celsius" );
+VALUES  (0x01, "DS18B2_Temperature_Probe", "Celsius" );
 
 
 -- MKR_Environmental_Shield
