@@ -6,6 +6,7 @@
         "initializer_list": "cpp",
         "span": "cpp",
         "string_view": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "*.tcc": "cpp"
     }
 }
