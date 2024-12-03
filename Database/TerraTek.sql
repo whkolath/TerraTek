@@ -24,7 +24,7 @@ CREATE TABLE Sensor_Errors (
     Error_ID INT NOT NULL,
     Error_Description VARCHAR(255),
     CONSTRAINT Errors_PK PRIMARY KEY (Error_ID)
-);
+);9
 
 CREATE TABLE Readings (
     Reading_ID INT NOT NULL AUTO_INCREMENT,

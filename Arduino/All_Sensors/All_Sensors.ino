@@ -14,19 +14,19 @@ String appEui = SECRET_APP_EUI;
 String appKey = SECRET_APP_KEY;
 
 // Constants
-#define EEPROM_ADDRESS 0x50     // I2C address of the 24FC512 EEPROM
-#define PH_SENSOR_PIN A2        // Analog pin for the pH sensor
-#define EC_SENSOR_PIN A0        // Analog pin for the EC sensor
-#define TEMP_SENSOR_PIN 2       // Digital pin for the DS18B20 sensor
+#define EEPROM_ADDRESS 0x50  // I2C address of the 24FC512 EEPROM
+#define PH_SENSOR_PIN A3     // Analog pin for the pH sensor
+#define EC_SENSOR_PIN A4     // Analog pin for the EC sensor
+#define TEMP_SENSOR_PIN 2    // Digital pin for the DS18B20 sensor
 
 // EEPROM object
 ExternalEEPROM eeprom;
 
 // Variables for EC and pH calibration
-double ecKConstant = 1.0;         // Default EC sensor calibration constant
-const double TEMP_COEFFICIENT = 0.02; // Temperature coefficient for EC correction
-const double V_REF = 3.3;         // Reference voltage for MKR WAN 1310
-const int ADC_RES_BITS = 4095;   // 12-bit ADC resolution (renamed to avoid conflict)
+double ecKConstant = 1.0;              // Default EC sensor calibration constant
+const double TEMP_COEFFICIENT = 0.02;  // Temperature coefficient for EC correction
+const double V_REF = 3.3;              // Reference voltage for MKR WAN 1310
+const int ADC_RES_BITS = 4095;         // 12-bit ADC resolution (renamed to avoid conflict)
 
 // Initialize the LoRaWAN modem
 LoRaModem modem;
@@ -70,14 +70,12 @@ double lastRainfall = 0.0;
 unsigned long lastTime = 0;
 
 // Function to convert kph to mph
-double convertKphToMph(double kph)
-{
+double convertKphToMph(double kph) {
   return kph * 0.621371;
 }
 
 // Function to convert mm to inches
-double convertMmToInches(double mm)
-{
+double convertMmToInches(double mm) {
   return mm * 0.0393701;
 }
 
@@ -94,18 +92,18 @@ double convertMmToInches(double mm)
 
 // Function to read data from the pH sensor
 float readPHSensor() {
-  int sensorValue = analogRead(PH_SENSOR_PIN); // Read the analog value
-  float voltage = sensorValue * (V_REF / ADC_RES_BITS); // Convert ADC value to voltage
-  float current = voltage / 100.0 * 1000; // Calculate current in mA (Ohm's Law)
-  float pH = (current - 4.0) * (14.0 / 16.0); // Convert current to pH value
+  int sensorValue = analogRead(PH_SENSOR_PIN);           // Read the analog value
+  float voltage = sensorValue * (V_REF / ADC_RES_BITS);  // Convert ADC value to voltage
+  float current = voltage / 100.0 * 1000;                // Calculate current in mA (Ohm's Law)
+  float pH = (current - 4.0) * (14.0 / 16.0);            // Convert current to pH value
   return pH;
 }
 
 // Function to read data from the EC sensor
 float readECSensor() {
-  int analogValue = analogRead(EC_SENSOR_PIN); // Read the analog voltage
-  float voltage = analogValue * (V_REF / ADC_RES_BITS); // Convert to voltage
-  float ec = voltage * ecKConstant; // Convert voltage to EC using calibration constant
+  int analogValue = analogRead(EC_SENSOR_PIN);           // Read the analog voltage
+  float voltage = analogValue * (V_REF / ADC_RES_BITS);  // Convert to voltage
+  float ec = voltage * ecKConstant;                      // Convert voltage to EC using calibration constant
   return ec;
 }
 
@@ -115,29 +113,31 @@ float correctEC(float ec, float temperature) {
 }
 
 // Function to read temperature from DS18B20
-float readTemperature() {
-  ds18b20.requestTemperatures();            // Request temperature readings
-  return ds18b20.getTempCByIndex(0);        // Get temperature in Celsius
-}
+// float readTemperature() {
+//   ds18b20.requestTemperatures();            // Request temperature readings
+//   return ds18b20.getTempCByIndex(0);        // Get temperature in Celsius
+// }
 
 // Function to load EC calibration data from EEPROM
 void loadECCalibration() {
-  ecKConstant = readFloatFromEEPROM(0); // Read EC calibration constant from EEPROM
-  Serial.print("Loaded EC Calibration Constant: "); Serial.println(ecKConstant);
+  ecKConstant = readFloatFromEEPROM(0);  // Read EC calibration constant from EEPROM
+  Serial.print("Loaded EC Calibration Constant: ");
+  Serial.println(ecKConstant);
 }
 
 // Function to save EC calibration data to EEPROM
 void saveECCalibration(float newKConstant) {
-  ecKConstant = newKConstant; // Update the calibration constant
-  writeFloatToEEPROM(0, ecKConstant); // Save to EEPROM at address 0
-  Serial.print("Saved EC Calibration Constant to EEPROM: "); Serial.println(ecKConstant);
+  ecKConstant = newKConstant;          // Update the calibration constant
+  writeFloatToEEPROM(0, ecKConstant);  // Save to EEPROM at address 0
+  Serial.print("Saved EC Calibration Constant to EEPROM: ");
+  Serial.println(ecKConstant);
 }
 
 // Example function to perform EC calibration (call during calibration)
 void performECCalibration(float measuredVoltage, float knownEC) {
   // Calculate the new calibration constant
   float newKConstant = knownEC / measuredVoltage;
-  saveECCalibration(newKConstant); // Save the new constant to EEPROM
+  saveECCalibration(newKConstant);  // Save the new constant to EEPROM
 }
 
 // Helper function to write a float to EEPROM
@@ -159,8 +159,7 @@ float readFloatFromEEPROM(uint16_t address) {
 }
 
 // Function to send data over LoRaWAN
-bool LoRaWAN_send(char SID, char error, double reading)
-{
+bool LoRaWAN_send(char SID, char error, double reading) {
   modem.beginPacket();
   modem.write(SID);
   modem.write(error);
@@ -168,31 +167,30 @@ bool LoRaWAN_send(char SID, char error, double reading)
 
   int err;
   err = modem.endPacket(true);
-  if (err > 0)
-  {
-    Serial.println("Message sent correctly!");
-    delay(1000); // Delay to avoid overcrowding the network
-    return false;
+  for (int i = 0; i < 5; i++) {
+    if (err > 0) {
+      Serial.println("Message sent correctly!");
+      delay(10000);  // Delay to avoid overcrowding the network
+      return false;
+    } else {
+      Serial.println("Error sending message.");
+      delay(10000);
+    }
   }
-  else
-  {
-    Serial.println("Error sending message.");
-    return true;
-  }
+  return true;
 }
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
 
   // Initialize the rainfall sensor
   delay(1000);
-  while (!Sensor.begin())
-  {
-    Serial.println("Rainfall Sensor init err!!!");
-    rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
-    delay(1000);
-  }
+  // while (!Sensor.begin())
+  // {
+  //   Serial.println("Rainfall Sensor init err!!!");
+  //   rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
+  //   delay(1000);
+  // }
 
   // Initialize the weather meter kit
   weatherMeterKit.begin();
@@ -205,153 +203,137 @@ void setup()
   pinMode(trig, OUTPUT);
 
   // Initialize MKR ENV Shield
-  if (!ENV.begin())
-  {
+  if (!ENV.begin()) {
     Serial.println("Failed to initialize MKR ENV Shield!");
     while (1)
       ;
   }
 
-    // Set ADC resolution to 12 bits
+  // Set ADC resolution to 12 bits
   analogReadResolution(12);
 
   // Initialize DS18B20 temperature sensor
-  ds18b20.begin();
+  // ds18b20.begin();
 
   Wire.begin();
 
   // Initialize EEPROM
-  Serial.println("Initializing EEPROM...");
-if (eeprom.begin() != 0) {
-  Serial.println("EEPROM initialization failed!");
-} else {
-  Serial.println("EEPROM initialized successfully.");
-}
+  // Serial.println("Initializing EEPROM...");
+  // if (eeprom.begin() != 0) {
+  //   Serial.println("EEPROM initialization failed!");
+  // } else {
+  //   Serial.println("EEPROM initialized successfully.");
+  // }
 
 
   // Initialize LoRaWAN
-  if (!modem.begin(US915))
-  {
+  if (!modem.begin(US915)) {
     Serial.println("Failed to start module");
     while (1)
       ;
   };
 
   // Connect to the LoRaWAN network
-  int connected = false;
-  do
-  {
-    Serial.println("Attempting to connect");
-    connected = modem.joinOTAA(appEui, appKey);
-  } while (!connected);
+  // int connected = false;
+  // do {
+  //   Serial.println("Attempting to connect");
+  //   connected = modem.joinOTAA(appEui, appKey);
+  // } while (!connected);
 }
 
-void loop()
-{
+void loop() {
   // --- Temperature Sensors ---
   sensors.requestTemperatures();
   double tempC = sensors.getTempCByIndex(0);
 
-  if (tempC != DEVICE_DISCONNECTED_C)
-  {
+  if (tempC != DEVICE_DISCONNECTED_C) {
     Serial.print("Temperature: ");
     Serial.println(tempC);
-  }
-  else
-  {
+  } else {
     Serial.println("Error: Could not read temperature data");
   }
 
-  LoRaWAN_send(DS18B2_Temperature_Probe, 0x00, tempC)
+  //LoRaWAN_send(DS18B2_Temperature_Probe, 0x00, tempC);
 
-  // Read EC sensor data and apply temperature correction
-  double ec = readECSensor();
-  double ecCorrected = correctEC(ec, tempC);
-  Serial.print("EC Value: "); Serial.println(ec);
-  Serial.print("Corrected EC Value: "); Serial.println(ecCorrected);
+  // // Read EC sensor data and apply temperature correction
+  // double ec = readECSensor();
+  // double ecCorrected = correctEC(ec, tempC);
+  // Serial.print("EC Value: "); Serial.println(ec);
+  // Serial.print("Corrected EC Value: "); Serial.println(ecCorrected);
 
-  LoRaWAN_send(DFR_Conductivity_Meter, 0x00, ecCorrected)
+  // //LoRaWAN_send(DFR_Conductivity_Meter, 0x00, ecCorrected)
 
-  // Read pH sensor data
-  double pH_val = readPHSensor();
-  Serial.print("pH Value: "); Serial.println(pH);
+  // // Read pH sensor data
+  // double pH_val = readPHSensor();
+  // Serial.print("pH Value: "); Serial.println(pH);
 
-  LoRaWAN_send(PH, 0x00, pH_val)
+  // //LoRaWAN_send(PH, 0x00, pH_val)
 
   // --- Wind Speed ---
   double windSpeedKph = weatherMeterKit.getWindSpeed();
-  if (windSpeedKph < 0)
-  {
-    windSpeedError = ERROR_SENSOR_DISCONNECTED; // Error if sensor is disconnected
+  if (windSpeedKph < 0) {
+    windSpeedError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
     Serial.println("Error: Wind speed sensor disconnected!");
-  }
-  else
-  {
-    windSpeedError = NO_ERROR; // No error
+  } else {
+    windSpeedError = NO_ERROR;  // No error
     Serial.print("Wind Speed (kph): ");
     Serial.println(windSpeedKph);
     Serial.print("Wind Speed (mph): ");
     Serial.println(convertKphToMph(windSpeedKph));
   }
 
-  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Speed, windSpeedError, windSpeedKph)
+  //LoRaWAN_send(SparkFun_Weather_Meter_Wind_Speed, windSpeedError, windSpeedKph);
 
   // --- Wind Direction ---
   double windDirection = weatherMeterKit.getWindDirection();
-  if (windDirection < 0)
-  {
-    windDirectionError = ERROR_SENSOR_DISCONNECTED; // Error if sensor is disconnected
+  if (windDirection < 0) {
+    windDirectionError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
     Serial.println("Error: Wind direction sensor disconnected!");
-  }
-  else
-  {
-    windDirectionError = NO_ERROR; // No error
+  } else {
+    windDirectionError = NO_ERROR;  // No error
     Serial.print("Wind Direction (degrees): ");
     Serial.println(windDirection);
   }
 
-  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Direction, windDirectionError, windDirection)
+  //LoRaWAN_send(SparkFun_Weather_Meter_Wind_Direction, windDirectionError, windDirection);
 
-      // --- Rainfall ---
-      double rainfall = Sensor.getRainfall();
-  if (rainfall == -1)
-  {
-    rainfallError = ERROR_SENSOR_DISCONNECTED; // Error if sensor is disconnected
+  // --- Rainfall ---
+  double rainfall = Sensor.getRainfall();
+  if (rainfall == -1) {
+    rainfallError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
     Serial.println("Error: Rainfall sensor disconnected!");
-  }
-  else
-  {
-    rainfallError = NO_ERROR; // No error
+  } else {
+    rainfallError = NO_ERROR;  // No error
     Serial.print("Rainfall (mm): ");
     Serial.println(rainfall);
   }
 
-  LoRaWAN_send(DFR_Weather_Meter_Rainfall, rainfallError, tempC)
+  //LoRaWAN_send(DFR_Weather_Meter_Rainfall, rainfallError, tempC);
 
   // --- ENV Shield ---
   Serial.print("Temperature = ");
   Serial.print(ENV.readTemperature());
   Serial.println(" °C");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Temperature, 0x00, ENV.readTemperature())
+  //LoRaWAN_send(MKR_Environmental_Shield_Temperature, 0x00, ENV.readTemperature());
 
-      Serial.print("Humidity = ");
+  Serial.print("Humidity = ");
   Serial.print(ENV.readHumidity());
   Serial.println(" %");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Humidity, 0x00, ENV.readHumidity())
+  //LoRaWAN_send(MKR_Environmental_Shield_Humidity, 0x00, ENV.readHumidity());
 
   Serial.print("Pressure = ");
   Serial.print(ENV.readPressure());
   Serial.println(" kPa");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Barometric_Pressure, 0x00, ENV.readPressure())
+  //LoRaWAN_send(MKR_Environmental_Shield_Barometric_Pressure, 0x00, ENV.readPressure());
 
   Serial.print("Illuminance = ");
   Serial.print(ENV.readIlluminance());
   Serial.println(" lx");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Illuminance, 0x00, ENV.readIlluminance())
+  //LoRaWAN_send(MKR_Environmental_Shield_Illuminance, 0x00, ENV.readIlluminance());
 
   // --- Ultrasonic Distance Sensor ---
   digitalWrite(trig, LOW);
@@ -366,7 +348,7 @@ void loop()
   Serial.print(distance);
   Serial.println(" CM");
 
-  LoRaWAN_send(DFR_Ultrasonic_Distance, 0x00, distance)
+  //LoRaWAN_send(DFR_Ultrasonic_Distance, 0x00, distance);
 
   // Log errors if any
   // logError("Wind Speed Sensor", windSpeedError);
