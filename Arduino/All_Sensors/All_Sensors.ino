@@ -42,10 +42,10 @@ DallasTemperature sensors(&oneWire);
 
 // Below are the pin definitions for each sensor of the weather meter kit
 const int windDirectionPin = A1;
-const int windSpeedPin = 5;
-const int rainfallPin = 1;
-const int echo = 2;
-const int trig = 3;
+const int windSpeedPin = 1;
+const int rainfallPin = 5;
+const int echo = 3;
+const int trig = 2;
 
 // Create an instance of the weather meter kit
 SFEWeatherMeterKit weatherMeterKit(windDirectionPin, windSpeedPin, rainfallPin);
@@ -184,7 +184,7 @@ void setup() {
   Serial.begin(115200);
 
   // Initialize the rainfall sensor
-  delay(1000);
+  delay(5000);
   // while (!Sensor.begin())
   // {
   //   Serial.println("Rainfall Sensor init err!!!");
@@ -245,6 +245,7 @@ void loop() {
   // --- Temperature Sensors ---
   sensors.requestTemperatures();
   double tempC = sensors.getTempCByIndex(0);
+
 
   if (tempC != DEVICE_DISCONNECTED_C) {
     Serial.print("Temperature: ");
@@ -347,6 +348,7 @@ void loop() {
   Serial.print("Distance: ");
   Serial.print(distance);
   Serial.println(" CM");
+  delay(2000);
 
   //LoRaWAN_send(DFR_Ultrasonic_Distance, 0x00, distance);
 
