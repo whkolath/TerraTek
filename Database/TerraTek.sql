@@ -4,6 +4,7 @@ SET FOREIGN_KEY_CHECKS=0;
 Drop table IF EXISTS Boards;
 drop table IF EXISTS Sensors;
 drop table IF EXISTS Readings;
+drop table IF EXISTS Sensor_Errors;
 SET FOREIGN_KEY_CHECKS=1;
 
 
@@ -24,7 +25,7 @@ CREATE TABLE Sensor_Errors (
     Error_ID INT NOT NULL,
     Error_Description VARCHAR(255),
     CONSTRAINT Errors_PK PRIMARY KEY (Error_ID)
-);9
+);
 
 CREATE TABLE Readings (
     Reading_ID INT NOT NULL AUTO_INCREMENT,
