@@ -59,11 +59,11 @@ void setup() {
   pinMode(echo, INPUT);
   pinMode(trig, OUTPUT);
 
-  // Initialize MKR ENV Shield
-  // if (!ENV.begin()) {
-  //   Serial.println("Failed to initialize MKR ENV Shield!");
-  //   while (1);
-  // }
+  Initialize MKR ENV Shield
+  if (!ENV.begin()) {
+    Serial.println("Failed to initialize MKR ENV Shield!");
+    while (1);
+  }
 
   // Initialize the weather meter kit
   weatherMeterKit.begin();
