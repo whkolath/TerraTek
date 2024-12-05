@@ -43,7 +43,6 @@ DallasTemperature sensors(&oneWire);
 // Below are the pin definitions for each sensor of the weather meter kit
 const int windDirectionPin = A1;
 const int windSpeedPin = 1;
-const int rainfallPin = 5;
 const int echo = 3;
 const int trig = 2;
 
@@ -238,18 +237,18 @@ void setup() {
 
 
   // Initialize LoRaWAN
-  if (!modem.begin(US915)) {
-    Serial.println("Failed to start module");
-    while (1)
-      ;
-  };
+  // if (!modem.begin(US915)) {
+  //   Serial.println("Failed to start module");
+  //   while (1)
+  //     ;
+  // };
 
-  // Connect to the LoRaWAN network
-  int connected = false;
-  do {
-    Serial.println("Attempting to connect");
-    connected = modem.joinOTAA(appEui, appKey);
-  } while (!connected);
+  // // Connect to the LoRaWAN network
+  // int connected = false;
+  // do {
+  //   Serial.println("Attempting to connect");
+  //   connected = modem.joinOTAA(appEui, appKey);
+  // } while (!connected);
 }
 
 void loop() {
@@ -257,6 +256,8 @@ void loop() {
   // --- Temperature Sensors ---
   sensors.requestTemperatures();
   double tempC = sensors.getTempCByIndex(0);
+  Serial.print("Temperature: ");
+  Serial.println(tempC);
   if (tempC < 0) {
     error = 0x01;  // DS18B20 Temperature too low
   } else if (tempC > 50) {
@@ -272,7 +273,7 @@ void loop() {
     Serial.println("Error: Could not read temperature data");
   }
 
-  LoRaWAN_send(DS18B2_Temperature_Probe, error, tempC);
+  //LoRaWAN_send(DS18B2_Temperature_Probe, error, tempC);
 
   // // Read EC sensor data and apply temperature correction
   // double ec = readECSensor();
@@ -280,13 +281,13 @@ void loop() {
   // Serial.print("EC Value: "); Serial.println(ec);
   // Serial.print("Corrected EC Value: "); Serial.println(ecCorrected);
 
-  // //LoRaWAN_send(DFR_Conductivity_Meter, 0x00, ecCorrected)
+  // ////LoRaWAN_send(DFR_Conductivity_Meter, 0x00, ecCorrected)
 
   // // Read pH sensor data
   // double pH_val = readPHSensor();
   // Serial.print("pH Value: "); Serial.println(pH);
 
-  // //LoRaWAN_send(PH, 0x00, pH_val)
+  // ////LoRaWAN_send(PH, 0x00, pH_val)
 
   // --- Wind Speed ---
   double windSpeedKph = weatherMeterKit.getWindSpeed();
@@ -301,7 +302,7 @@ void loop() {
     Serial.println(convertKphToMph(windSpeedKph));
   }
 
-  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Speed, windSpeedError, windSpeedKph);
+  //LoRaWAN_send(SparkFun_Weather_Meter_Wind_Speed, windSpeedError, windSpeedKph);
 
   // --- Wind Direction ---
   double windDirection = weatherMeterKit.getWindDirection();
@@ -314,7 +315,7 @@ void loop() {
     Serial.println(windDirection);
   }
 
-  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Direction, windDirectionError, windDirection);
+  //LoRaWAN_send(SparkFun_Weather_Meter_Wind_Direction, windDirectionError, windDirection);
 
   // --- Rainfall ---
   double rainfall = Sensor.getRainfall(1);
@@ -328,32 +329,32 @@ void loop() {
   }
 
 
-  LoRaWAN_send(DFR_Weather_Meter_Rainfall, rainfallError, tempC);
+  //LoRaWAN_send(DFR_Weather_Meter_Rainfall, rainfallError, tempC);
 
   //--- ENV Shield ---
   Serial.print("Temperature = ");
   Serial.print(ENV.readTemperature());
   Serial.println(" °C");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Temperature, 0x00, ENV.readTemperature());
+  //LoRaWAN_send(MKR_Environmental_Shield_Temperature, 0x00, ENV.readTemperature());
 
   Serial.print("Humidity = ");
   Serial.print(ENV.readHumidity());
   Serial.println(" %");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Humidity, 0x00, ENV.readHumidity());
+  //LoRaWAN_send(MKR_Environmental_Shield_Humidity, 0x00, ENV.readHumidity());
 
   Serial.print("Pressure = ");
   Serial.print(ENV.readPressure());
   Serial.println(" kPa");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Barometric_Pressure, 0x00, ENV.readPressure());
+  //LoRaWAN_send(MKR_Environmental_Shield_Barometric_Pressure, 0x00, ENV.readPressure());
 
   Serial.print("Illuminance = ");
   Serial.print(ENV.readIlluminance());
   Serial.println(" lx");
 
-  LoRaWAN_send(MKR_Environmental_Shield_Illuminance, 0x00, ENV.readIlluminance());
+  //LoRaWAN_send(MKR_Environmental_Shield_Illuminance, 0x00, ENV.readIlluminance());
 
   // --- Ultrasonic Distance Sensor ---
   digitalWrite(trig, LOW);
@@ -364,6 +365,9 @@ void loop() {
 
   duration = pulseIn(echo, HIGH);
   distance = (duration * 0.0343) / 2;
+  Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.println(" CM");
   if (distance <= 20 || distance >= 600) {
     Serial.println("Error reading Ultrasonic Distance Sensor");
     error = 0x01;
@@ -374,8 +378,9 @@ void loop() {
     error = 0x00;
   }
 
-  LoRaWAN_send(DFR_Ultrasonic_Distance, error, distance);
+  //LoRaWAN_send(DFR_Ultrasonic_Distance, error, distance);
 
+  delay(500);
   // Log errors if any
   // logError("Wind Speed Sensor", windSpeedError);
   // logError("Wind Direction Sensor", windDirectionError);
