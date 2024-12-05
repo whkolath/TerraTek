@@ -160,21 +160,22 @@ float readFloatFromEEPROM(uint16_t address) {
 
 // Function to send data over LoRaWAN
 bool LoRaWAN_send(char SID, char error, double reading) {
-  modem.beginPacket();
-  modem.write(SID);
-  modem.write(error);
-  modem.write(reading);
 
-  int err;
-  err = modem.endPacket(true);
   for (int i = 0; i < 5; i++) {
+    modem.beginPacket();
+    modem.write(SID);
+    modem.write(error);
+    modem.write(reading);
+
+    int err;
+    err = modem.endPacket(true);
     if (err > 0) {
       Serial.println("Message sent correctly!");
-      delay(10000);  // Delay to avoid overcrowding the network
+      delay(20000);  // Delay to avoid overcrowding the network
       return false;
     } else {
       Serial.println("Error sending message.");
-      delay(10000);
+      delay(20000);
     }
   }
   return true;
@@ -185,24 +186,24 @@ void setup() {
 
   // Initialize the rainfall sensor
   delay(5000);
-  // while (!Sensor.begin())
-  // {
-  //   Serial.println("Rainfall Sensor init err!!!");
-  //   rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
-  //   delay(1000);
-  // }
+// while (!Sensor.begin())
+// {
+//   Serial.println("Rainfall Sensor init err!!!");
+//   rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
+//   delay(1000);
+// }
 
-  // Initialize the weather meter kit
-  #ifdef SFE_WMK_PLAFTORM_UNKNOWN
-    weatherMeterKit.setADCResolutionBits(10);
-    
-    //Serial.println(F("Unknown Signal"));
-    Serial.println();
+// Initialize the weather meter kit
+#ifdef SFE_WMK_PLAFTORM_UNKNOWN
+  weatherMeterKit.setADCResolutionBits(10);
+
+  //Serial.println(F("Unknown Signal"));
+  Serial.println();
 #endif
 
-    // Begin weather meter kit
-    weatherMeterKit.begin();
-    lastTime = millis();  // Initialize last time
+  // Begin weather meter kit
+  weatherMeterKit.begin();
+  lastTime = millis();  // Initialize last time
 
 
   // Initialize temperature sensors
@@ -212,7 +213,7 @@ void setup() {
   pinMode(echo, INPUT);
   pinMode(trig, OUTPUT);
 
- // Initialize MKR ENV Shield
+  // Initialize MKR ENV Shield
   if (!ENV.begin()) {
     Serial.println("Failed to initialize MKR ENV Shield!");
     while (1)
@@ -252,19 +253,26 @@ void setup() {
 }
 
 void loop() {
+  char error = 0x00;
   // --- Temperature Sensors ---
   sensors.requestTemperatures();
   double tempC = sensors.getTempCByIndex(0);
-
+  if (ds18b20Temp < 0) {
+    error = 0x01;  // DS18B20 Temperature too low
+  } else if (ds18b20Temp > 50) {
+    error = 0x01;  // DS18B20 Temperature too high
+  }
 
   if (tempC != DEVICE_DISCONNECTED_C) {
+    error = 0x00;
     Serial.print("Temperature: ");
     Serial.println(tempC);
   } else {
+    error = 0x01;
     Serial.println("Error: Could not read temperature data");
   }
 
-  LoRaWAN_send(DS18B2_Temperature_Probe, 0x00, tempC);
+  LoRaWAN_send(DS18B2_Temperature_Probe, error, tempC);
 
   // // Read EC sensor data and apply temperature correction
   // double ec = readECSensor();
@@ -322,7 +330,7 @@ void loop() {
 
   LoRaWAN_send(DFR_Weather_Meter_Rainfall, rainfallError, tempC);
 
- //--- ENV Shield ---
+  //--- ENV Shield ---
   Serial.print("Temperature = ");
   Serial.print(ENV.readTemperature());
   Serial.println(" °C");
@@ -356,12 +364,17 @@ void loop() {
 
   duration = pulseIn(echo, HIGH);
   distance = (duration * 0.0343) / 2;
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.println(" CM");
-  delay(2000);
+  if (distance <= 20 || distance >= 600) {
+    Serial.println("Error reading Ultrasonic Distance Sensor");
+    error = 0x01;
+  } else {
+    Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.println(" CM");
+    error = 0x00;
+  }
 
-  LoRaWAN_send(DFR_Ultrasonic_Distance, 0x00, distance);
+  LoRaWAN_send(DFR_Ultrasonic_Distance, error, distance);
 
   // Log errors if any
   // logError("Wind Speed Sensor", windSpeedError);
