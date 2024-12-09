@@ -79,16 +79,6 @@ double convertMmToInches(double mm) {
   return mm * 0.0393701;
 }
 
-// void logError(const char *sensorName, int errorCode)
-// {
-//   if (errorCode != NO_ERROR)
-//   {
-//     Serial.print(sensorName);
-//     Serial.print(" Error Code: ");
-//     Serial.println(errorCode, HEX); // Print error code in hexadecimal
-//   }
-// }
-
 
 // Function to read data from the pH sensor
 float readPHSensor() {
@@ -111,12 +101,6 @@ float readECSensor() {
 float correctEC(float ec, float temperature) {
   return ec / (1 + TEMP_COEFFICIENT * (temperature - 25.0));
 }
-
-// Function to read temperature from DS18B20
-// float readTemperature() {
-//   ds18b20.requestTemperatures();            // Request temperature readings
-//   return ds18b20.getTempCByIndex(0);        // Get temperature in Celsius
-// }
 
 // Function to load EC calibration data from EEPROM
 void loadECCalibration() {
@@ -268,6 +252,13 @@ void loop() {
     Serial.println(tempC);
   } else {
     error = 0x01;
+  }
+  
+  LoRaWAN_send(DS18B2_Temperature_Probe, error, tempC);
+
+  // // Read EC sensor data and apply temperature correction
+  // double ec = readECSensor();
+  // double ecCorrected = correctEC(ec, tempC);irectionError);
 
   // Serial.print("EC Value: "); Serial.println(ec);
   // Serial.print("Corrected EC Value: "); Serial.println(ecCorrected);
@@ -367,16 +358,4 @@ void loop() {
   }
 
   LoRaWAN_send(DFR_Ultrasonic_Distance, error, distance);
-
-  // Log errors if any
-  // logError("Wind Speed Sensor", windSpeedError);
-  // logError("Wind Direction Sensor", windD    Serial.println("Error: Could not read temperature data");
-  }
-
-  LoRaWAN_send(DS18B2_Temperature_Probe, error, tempC);
-
-  // // Read EC sensor data and apply temperature correction
-  // double ec = readECSensor();
-  // double ecCorrected = correctEC(ec, tempC);irectionError);
-  // logError("Rainfall Sensor", rainfallError);
 }
