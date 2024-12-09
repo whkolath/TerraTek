@@ -1,13 +1,14 @@
 #include <MKRWAN.h>
-#include "arduino_secrets.h"
-#include "DFRobot_RainfallSensor.h"
+#include <DFRobot_RainfallSensor.h>
 #include <Arduino_MKRENV.h>
-#include "SparkFun_Weather_Meter_Kit_Arduino_Library.h"
+#include <SparkFun_Weather_Meter_Kit_Arduino_Library.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include "sensor_ids.h"
 #include <Wire.h>
 #include <SparkFun_External_EEPROM.h>
+
+#include "arduino_secrets.h"
+#include "sensor_ids.h"
 
 // LoRaWAN credentials are stored in arduino_secrets.h
 String appEui = SECRET_APP_EUI;
