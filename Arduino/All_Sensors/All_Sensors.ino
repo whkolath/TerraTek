@@ -162,20 +162,19 @@ float readFloatFromEEPROM(uint16_t address) {
 bool LoRaWAN_send(char SID, char error, double reading) {
 
   for (int i = 0; i < 5; i++) {
+    int err;
     modem.beginPacket();
     modem.write(SID);
     modem.write(error);
     modem.write(reading);
-
-    int err;
     err = modem.endPacket(true);
     if (err > 0) {
       Serial.println("Message sent correctly!");
-      delay(20000);  // Delay to avoid overcrowding the network
+      delay(5000);  // Delay to avoid overcrowding the network
       return false;
     } else {
       Serial.println("Error sending message.");
-      delay(20000);
+      delay(5000);
     }
   }
   return true;
@@ -269,14 +268,7 @@ void loop() {
     Serial.println(tempC);
   } else {
     error = 0x01;
-    Serial.println("Error: Could not read temperature data");
-  }
 
-  LoRaWAN_send(DS18B2_Temperature_Probe, error, tempC);
-
-  // // Read EC sensor data and apply temperature correction
-  // double ec = readECSensor();
-  // double ecCorrected = correctEC(ec, tempC);
   // Serial.print("EC Value: "); Serial.println(ec);
   // Serial.print("Corrected EC Value: "); Serial.println(ecCorrected);
 
@@ -378,6 +370,13 @@ void loop() {
 
   // Log errors if any
   // logError("Wind Speed Sensor", windSpeedError);
-  // logError("Wind Direction Sensor", windDirectionError);
+  // logError("Wind Direction Sensor", windD    Serial.println("Error: Could not read temperature data");
+  }
+
+  LoRaWAN_send(DS18B2_Temperature_Probe, error, tempC);
+
+  // // Read EC sensor data and apply temperature correction
+  // double ec = readECSensor();
+  // double ecCorrected = correctEC(ec, tempC);irectionError);
   // logError("Rainfall Sensor", rainfallError);
 }
