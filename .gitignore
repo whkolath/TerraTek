@@ -38,3 +38,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/home/terratekserver/Senior-Project/TerraTek_API/node_modules
+/home/terratekserver/Senior-Project/TerraTek_Website/.next
+/home/terratekserver/Senior-Project/TerraTek_Website/node_modules
+
