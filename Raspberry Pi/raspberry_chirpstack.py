@@ -100,7 +100,7 @@ class Data_Collector(BaseHTTPRequestHandler):
               (up.device_info.dev_eui, SID, error_ID, reading))
 
         TerraTek_db.connect()
-        TerraTek_db.insert_into_readings(up.device_info.dev_eui, SID, error_ID, reading, str(datetime.now()))
+        TerraTek_db.insert_into_readings(up.device_info.dev_eui, SID, error_ID, reading, str(datetime.utcnow()))
         TerraTek_db.close_connection()
 
 
