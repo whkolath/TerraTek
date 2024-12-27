@@ -1,114 +1,178 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+import dynamic from 'next/dynamic';
+import 'chart.js/auto';
+import { ChartData } from 'chart.js';
+const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
+    ssr: false,
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { useEffect, useState } from 'react';
 
-export default function Home() {
-  return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+const LineChart = () => {
+
+
+    const [temperatureDataset, setTemperatureDataset] = useState<ChartData<'line'> | null>(null);
+    const [longTemperatureDataset, setLongTemperatureDataset] = useState<ChartData<'line'> | null>(null);
+    const [humidityDataset, setHumidityDataset] = useState<ChartData<'line'> | null>(null);
+    const [pressureDataset, setPressureDataset] = useState<ChartData<'line'> | null>(null);
+    const [illuminanceDataset, setIlluminanceDataset] = useState<ChartData<'line'> | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [temperatureResponse, longTemperatureResponse, humidityResponse, pressureResponse, illuminanceResponse] = await Promise.all([
+                    fetch("/api/latest/2"),
+                    fetch("/api/2"),
+                    fetch("/api/latest/3"),
+                    fetch("/api/latest/4"),
+                    fetch("/api/latest/5")
+                ]);
+
+                const temperatureData = await temperatureResponse.json();
+                const longTemperatureData = await longTemperatureResponse.json();
+                const humidityData = await humidityResponse.json();
+                const pressureData = await pressureResponse.json();
+                const illuminanceData = await illuminanceResponse.json();
+
+                temperatureData.reverse();
+                longTemperatureData.reverse();
+                humidityData.reverse();
+                pressureData.reverse();
+                illuminanceData.reverse();
+
+                const temperatureLabels = temperatureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "numeric",
+                        timeZone: "America/Chicago"
+                    })
+                );
+
+                setTemperatureDataset({
+                    labels: temperatureLabels,
+                    datasets: [
+                        {
+                            label: 'Temperature',
+                            data: temperatureData.map((data: { Sensor_Value: number }) => (data.Sensor_Value * 9 / 5) + 32),
+                            fill: false,
+                            borderColor: 'rgb(255, 0, 0)',
+                            tension: 0.1,
+                        },
+                    ],
+                });
+                const longTemperatureLabels = longTemperatureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleString("en-US", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                    timeZone: "America/Chicago"
+                }));
+
+                setLongTemperatureDataset({
+                    labels: longTemperatureLabels,
+                    datasets: [
+                        {
+                            label: 'Temperature',
+                            data: longTemperatureData.map((data: { Sensor_Value: number }) => (data.Sensor_Value * 9 / 5) + 32),
+                            fill: false,
+                            borderColor: 'rgb(230, 0, 255)',
+                            tension: 0.1,
+                        },
+                    ],
+                });
+
+                const humidityLabels = humidityData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    timeZone: "America/Chicago"
+                }));
+
+                setHumidityDataset({
+                    labels: humidityLabels,
+                    datasets: [
+                        {
+                            label: 'Humidity',
+                            data: humidityData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
+                            fill: false,
+                            borderColor: 'rgb(11, 173, 35)',
+                            tension: 0.1,
+                        },
+                    ],
+                });
+
+
+                const pressureLabels = pressureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    timeZone: "America/Chicago"
+                }));
+
+                setPressureDataset({
+                    labels: pressureLabels,
+                    datasets: [
+                        {
+                            label: 'Pressure',
+                            data: pressureData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
+                            fill: false,
+                            borderColor: 'rgb(0, 0, 255)',
+                            tension: 0.1,
+                        },
+                    ],
+                });
+
+
+                const illuminanceLabels = illuminanceData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    timeZone: "America/Chicago"
+                }));
+
+                setIlluminanceDataset({
+                    labels: illuminanceLabels,
+                    datasets: [
+                        {
+                            label: 'Illuminance',
+                            data: illuminanceData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
+                            fill: false,
+                            borderColor: 'rgb(255, 140, 0)',
+                            tension: 0.1,
+                        },
+                    ],
+                });
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    return (
+        <div className="w-full grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-4 p-4 box-border">
+            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
+                <h2 className="text-lg font-bold">Temperature</h2>
+
+                {temperatureDataset && <Line data={temperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
+                <p>Current Value: {temperatureDataset && typeof temperatureDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((temperatureDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()}°F</p>
+            </div>
+            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
+                <h2 className="text-lg font-bold">Humidity</h2>
+                {humidityDataset && <Line data={humidityDataset} options={{ scales: { y: { title: { display: true, text: '%' } } }, plugins: { legend: { display: false } } }} />}
+                <p>Current Value: {humidityDataset && typeof humidityDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((humidityDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()}%</p>
+            </div>
+            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
+                <h2 className="text-lg font-bold">Pressure</h2>
+                {pressureDataset && <Line data={pressureDataset} options={{ scales: { y: { title: { display: true, text: 'kPa' } } }, plugins: { legend: { display: false } } }} />}
+                <p>Current Value: {pressureDataset && typeof pressureDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((pressureDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()} kPa</p>
+            </div>
+            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
+                <h2 className="text-lg font-bold">Illuminance</h2>
+                {illuminanceDataset && <Line data={illuminanceDataset} options={{ scales: { y: { title: { display: true, text: 'lux' } } }, plugins: { legend: { display: false } } }} />}
+                <p>Current Value: {illuminanceDataset && typeof illuminanceDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((illuminanceDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()} lux</p>
+            </div>
+            <div className="lg:col-span-4 md:col-span-2 col-span-1 p-6 bg-white border border-gray-300 shadow-md rounded-lg">
+                <h2 className="text-lg font-bold">Two Day Tempurature History</h2>
+                {longTemperatureDataset && <Line data={longTemperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
+
+export default LineChart;
