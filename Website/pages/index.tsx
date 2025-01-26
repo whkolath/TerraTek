@@ -70,7 +70,14 @@ const LineChart = () => {
                     datasets: [
                         {
                             label: 'Temperature',
-                            data: temperatureData.map((data: { Average_Reading: number }) => (data.Average_Reading * 9 / 5) + 32),
+                            data: temperatureData.map((data: { Average_Reading: number }) => {
+                                if (data.Average_Reading != null)
+                                {
+                                    return data.Average_Reading * 9 / 5 + 32;
+                                }
+                                else
+                                    return null;
+                            }),
                             fill: false,
                             borderColor: 'rgb(255, 0, 0)',
                             tension: 0.1,
@@ -161,6 +168,20 @@ const LineChart = () => {
 
         fetchData();
     }, [value, sensor]);
+    
+    function downloadChart() {
+        const canvas = document.querySelector('#Chart canvas');
+        if (canvas) {
+            (canvas as HTMLCanvasElement).toBlob((blob: Blob | null) => {
+                if (blob) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'Chart.png';
+                    link.click();
+                }
+            });
+        }
+    }
 
     return (
         <div className="w-full grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-4 p-4 box-border">
@@ -228,8 +249,11 @@ const LineChart = () => {
                     </DropdownMenu>
                 </Dropdown>
              
-                {longTemperatureDataset && <Line data={longTemperatureDataset} options={{ scales: { y: { title: { display: true } } }, plugins: { legend: { display: false } } }} />}
-                <p className="text-xs">Last reading: {temperatureDataset && temperatureDataset.labels && temperatureDataset.labels.slice(-1)[0] as string}</p>
+                <Button color="primary" onPress={downloadChart}>Download</Button>
+                <div id="Chart">
+                    {longTemperatureDataset && <Line data={longTemperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
+                    <p className="text-xs">Last reading: {temperatureDataset && temperatureDataset.labels && temperatureDataset.labels.slice(-1)[0] as string}</p>
+                </div>
             </div>
         </div>
     );
