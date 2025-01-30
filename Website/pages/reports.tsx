@@ -1,182 +1,219 @@
-import dynamic from 'next/dynamic';
+// import dynamic from 'next/dynamic';
 import 'chart.js/auto';
-import { ChartData } from 'chart.js';
-const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
-    ssr: false,
-});
+// import { ChartData } from 'chart.js';
+import { Button } from "@heroui/button";
+import {
+    Dropdown,
+    DropdownTrigger,
+    DropdownMenu,
+    // DropdownSection,
+    DropdownItem
+} from "@heroui/dropdown";
+import {DateRangePicker} from "@heroui/react";
 
-import { useEffect, useState } from 'react';
+
+// const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
+//     ssr: false,
+// });
+
+// import { useEffect, useState } from 'react';
 
 
 const LineChart = () => {
 
 
-    const [temperatureDataset, setTemperatureDataset] = useState<ChartData<'line'> | null>(null);
-    const [longTemperatureDataset, setLongTemperatureDataset] = useState<ChartData<'line'> | null>(null);
-    const [humidityDataset, setHumidityDataset] = useState<ChartData<'line'> | null>(null);
-    const [pressureDataset, setPressureDataset] = useState<ChartData<'line'> | null>(null);
-    const [illuminanceDataset, setIlluminanceDataset] = useState<ChartData<'line'> | null>(null);
+    // const [temperatureDataset, setTemperatureDataset] = useState<ChartData<'line'> | null>(null);
+    // const [longTemperatureDataset, setLongTemperatureDataset] = useState<ChartData<'line'> | null>(null);
+    // const [humidityDataset, setHumidityDataset] = useState<ChartData<'line'> | null>(null);
+    // const [pressureDataset, setPressureDataset] = useState<ChartData<'line'> | null>(null);
+    // const [illuminanceDataset, setIlluminanceDataset] = useState<ChartData<'line'> | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [temperatureResponse, longTemperatureResponse, humidityResponse, pressureResponse, illuminanceResponse] = await Promise.all([
-                    fetch("/api/latest/2"),
-                    fetch("/api/2"),
-                    fetch("/api/latest/3"),
-                    fetch("/api/latest/4"),
-                    fetch("/api/latest/5")
-                ]);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const [temperatureResponse, longTemperatureResponse, humidityResponse, pressureResponse, illuminanceResponse] = await Promise.all([
+    //                 fetch("/api/latest/2"),
+    //                 fetch("/api/2"),
+    //                 fetch("/api/latest/3"),
+    //                 fetch("/api/latest/4"),
+    //                 fetch("/api/latest/5")
+    //             ]);
 
-                const temperatureData = await temperatureResponse.json();
-                const longTemperatureData = await longTemperatureResponse.json();
-                const humidityData = await humidityResponse.json();
-                const pressureData = await pressureResponse.json();
-                const illuminanceData = await illuminanceResponse.json();
+    //             const temperatureData = await temperatureResponse.json();
+    //             const longTemperatureData = await longTemperatureResponse.json();
+    //             const humidityData = await humidityResponse.json();
+    //             const pressureData = await pressureResponse.json();
+    //             const illuminanceData = await illuminanceResponse.json();
 
-                temperatureData.reverse();
-                longTemperatureData.reverse();
-                humidityData.reverse();
-                pressureData.reverse();
-                illuminanceData.reverse();
+    //             temperatureData.reverse();
+    //             longTemperatureData.reverse();
+    //             humidityData.reverse();
+    //             pressureData.reverse();
+    //             illuminanceData.reverse();
 
-                const temperatureLabels = temperatureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "numeric",
-                        timeZone: "America/Chicago"
-                    })
-                );
+    //             const temperatureLabels = temperatureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+    //                     hour: "numeric",
+    //                     minute: "numeric",
+    //                     timeZone: "America/Chicago"
+    //                 })
+    //             );
 
-                setTemperatureDataset({
-                    labels: temperatureLabels,
-                    datasets: [
-                        {
-                            label: 'Temperature',
-                            data: temperatureData.map((data: { Sensor_Value: number }) => (data.Sensor_Value * 9 / 5) + 32),
-                            fill: false,
-                            borderColor: 'rgb(255, 0, 0)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
-                const longTemperatureLabels = longTemperatureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleString("en-US", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                    timeZone: "America/Chicago"
-                }));
+    //             setTemperatureDataset({
+    //                 labels: temperatureLabels,
+    //                 datasets: [
+    //                     {
+    //                         label: 'Temperature',
+    //                         data: temperatureData.map((data: { Sensor_Value: number }) => (data.Sensor_Value * 9 / 5) + 32),
+    //                         fill: false,
+    //                         borderColor: 'rgb(255, 0, 0)',
+    //                         tension: 0.1,
+    //                     },
+    //                 ],
+    //             });
+    //             const longTemperatureLabels = longTemperatureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleString("en-US", {
+    //                 dateStyle: "short",
+    //                 timeStyle: "short",
+    //                 timeZone: "America/Chicago"
+    //             }));
 
-                setLongTemperatureDataset({
-                    labels: longTemperatureLabels,
-                    datasets: [
-                        {
-                            label: 'Temperature',
-                            data: longTemperatureData.map((data: { Sensor_Value: number }) => (data.Sensor_Value * 9 / 5) + 32),
-                            fill: false,
-                            borderColor: 'rgb(230, 0, 255)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
+    //             setLongTemperatureDataset({
+    //                 labels: longTemperatureLabels,
+    //                 datasets: [
+    //                     {
+    //                         label: 'Temperature',
+    //                         data: longTemperatureData.map((data: { Sensor_Value: number }) => (data.Sensor_Value * 9 / 5) + 32),
+    //                         fill: false,
+    //                         borderColor: 'rgb(230, 0, 255)',
+    //                         tension: 0.1,
+    //                     },
+    //                 ],
+    //             });
 
-                const humidityLabels = humidityData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                }));
+    //             const humidityLabels = humidityData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+    //                 hour: "numeric",
+    //                 minute: "numeric",
+    //                 timeZone: "America/Chicago"
+    //             }));
 
-                setHumidityDataset({
-                    labels: humidityLabels,
-                    datasets: [
-                        {
-                            label: 'Humidity',
-                            data: humidityData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
-                            fill: false,
-                            borderColor: 'rgb(11, 173, 35)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
-
-
-                const pressureLabels = pressureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                }));
-
-                setPressureDataset({
-                    labels: pressureLabels,
-                    datasets: [
-                        {
-                            label: 'Pressure',
-                            data: pressureData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
-                            fill: false,
-                            borderColor: 'rgb(0, 0, 255)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
+    //             setHumidityDataset({
+    //                 labels: humidityLabels,
+    //                 datasets: [
+    //                     {
+    //                         label: 'Humidity',
+    //                         data: humidityData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
+    //                         fill: false,
+    //                         borderColor: 'rgb(11, 173, 35)',
+    //                         tension: 0.1,
+    //                     },
+    //                 ],
+    //             });
 
 
-                const illuminanceLabels = illuminanceData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                }));
+    //             const pressureLabels = pressureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+    //                 hour: "numeric",
+    //                 minute: "numeric",
+    //                 timeZone: "America/Chicago"
+    //             }));
 
-                setIlluminanceDataset({
-                    labels: illuminanceLabels,
-                    datasets: [
-                        {
-                            label: 'Illuminance',
-                            data: illuminanceData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
-                            fill: false,
-                            borderColor: 'rgb(255, 140, 0)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
-            } catch (error) {
-                console.error("Error fetching weather data:", error);
-            }
-        };
+    //             setPressureDataset({
+    //                 labels: pressureLabels,
+    //                 datasets: [
+    //                     {
+    //                         label: 'Pressure',
+    //                         data: pressureData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
+    //                         fill: false,
+    //                         borderColor: 'rgb(0, 0, 255)',
+    //                         tension: 0.1,
+    //                     },
+    //                 ],
+    //             });
 
-        fetchData();
-    }, []);
+
+    //             const illuminanceLabels = illuminanceData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
+    //                 hour: "numeric",
+    //                 minute: "numeric",
+    //                 timeZone: "America/Chicago"
+    //             }));
+
+    //             setIlluminanceDataset({
+    //                 labels: illuminanceLabels,
+    //                 datasets: [
+    //                     {
+    //                         label: 'Illuminance',
+    //                         data: illuminanceData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
+    //                         fill: false,
+    //                         borderColor: 'rgb(255, 140, 0)',
+    //                         tension: 0.1,
+    //                     },
+    //                 ],
+    //             });
+    //         } catch (error) {
+    //             console.error("Error fetching weather data:", error);
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, []);
 
     return (
-        <div className="w-full grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-4 p-4 box-border">
-            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
-                <h2 className="text-lg font-bold">Temperature</h2>
+        <div className="w-full h-full grid gap-2 p-2 lg:grid-cols-4 md:grid-cols-2 lg:grid-rows-[0.75fr_2fr_0.25fr] md:grid-rows-[0.75fr_0.75fr_2fr_0.5fr]">
+            <div className="h-full bg-slate-100 shadow-sm rounded-md">
+                <div className="p-3">
+                    <h1 className="text-center text-xl font-semibold font-mono">Time</h1>
+                    <div className="grid grid-cols-3 gap-2">
+                    <Button className="shadow-sm" color="primary" radius="sm">Today</Button>
+                    <Button className="shadow-sm" color="primary" radius="sm">Last Week</Button>
+                    <Button className="shadow-sm" color="primary" radius="sm">This Month</Button>
+                    <div className="col-span-3">
+                        <DateRangePicker className="flex items-center justify-center h-full" label="Custom" />
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md flex-grow">
+                <h1 className="text-center text-xl font-semibold font-mono">Tanks</h1>
+                <Dropdown>
+                        <DropdownTrigger>
+                            <Button className="shadow-sm" radius="sm" variant="bordered">Tank Selection</Button>
+                        </DropdownTrigger>
+                        <DropdownMenu className="shadow-sm">
+                            <DropdownItem key="PDF">PDF</DropdownItem>
+                            <DropdownItem key="PNG">PNG</DropdownItem>
+                            <DropdownItem key="CSV">CSV</DropdownItem>
+                            <DropdownItem key="JSON">JSON</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+            </div>
+            <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md">
+                <h1 className="text-center text-xl font-semibold font-mono">Sensors</h1>
+            </div>
+            <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md">
+                <h1 className="text-center text-xl font-semibold font-mono">Chart Type</h1>
+            </div>
+            <div className="row-span-2 col-span-1 p-4 h-full  bg-slate-100 shadow-sm rounded-md lg:col-span-3 md:col-span-2">
+                <h1 className="text-center text-xl font-semibold font-mono">Chart</h1>
+            </div>
+            <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md">
+                <h1 className="text-center text-xl font-semibold font-mono">Stats</h1>
+            </div>
+            <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md">
+                <h1 className="text-center text-xl font-semibold font-mono">Downloads</h1>
+                <div className="flex gap-4 p-4 justify-center">
+                    <Button color="primary" radius="sm">Download</Button>
+                    <Dropdown>
+                        <DropdownTrigger>
+                            <Button className="shadow-sm" radius="sm" variant="bordered">Download Format</Button>
+                        </DropdownTrigger>
+                        <DropdownMenu className="shadow-sm">
+                            <DropdownItem key="PDF">PDF</DropdownItem>
+                            <DropdownItem key="PNG">PNG</DropdownItem>
+                            <DropdownItem key="CSV">CSV</DropdownItem>
+                            <DropdownItem key="JSON">JSON</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </div>
+            </div>
 
-                {temperatureDataset && <Line data={temperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
-                <p>Current Value: {temperatureDataset && typeof temperatureDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((temperatureDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()}°F</p>
-                <p className="text-xs">Last reading: {temperatureDataset && temperatureDataset.labels && temperatureDataset.labels.slice(-1)[0] as string}</p>
-            
-            </div>
-            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
-                <h2 className="text-lg font-bold">Humidity</h2>
-                {humidityDataset && <Line data={humidityDataset} options={{ scales: { y: { title: { display: true, text: '%' } } }, plugins: { legend: { display: false } } }} />}
-                <p>Current Value: {humidityDataset && typeof humidityDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((humidityDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()}%</p>
-                <p className="text-xs">Last reading: {humidityDataset && humidityDataset.labels && humidityDataset.labels.slice(-1)[0] as string}</p>
-            </div>
-            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
-                <h2 className="text-lg font-bold">Pressure</h2>
-                {pressureDataset && <Line data={pressureDataset} options={{ scales: { y: { title: { display: true, text: 'kPa' } } }, plugins: { legend: { display: false } } }} />}
-                <p>Current Value: {pressureDataset && typeof pressureDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((pressureDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()} kPa</p>
-                <p className="text-xs">Last reading: {pressureDataset && pressureDataset.labels && pressureDataset.labels.slice(-1)[0] as string}</p>
-            </div>
-            <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
-                <h2 className="text-lg font-bold">Illuminance</h2>
-                {illuminanceDataset && <Line data={illuminanceDataset} options={{ scales: { y: { title: { display: true, text: 'lux' } } }, plugins: { legend: { display: false } } }} />}
-                <p>Current Value: {illuminanceDataset && typeof illuminanceDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((illuminanceDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()} lux</p>
-                <p className="text-xs">Last reading: {illuminanceDataset && illuminanceDataset.labels && illuminanceDataset.labels.slice(-1)[0] as string}</p>
-            </div>
-            <div className="lg:col-span-4 md:col-span-2 col-span-1 p-6 bg-white border border-gray-300 shadow-md rounded-lg">
-                <h2 className="text-lg font-bold">Two Day Temperature History</h2>
-                {longTemperatureDataset && <Line data={longTemperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
-                <p className="text-xs">Last reading: {temperatureDataset && temperatureDataset.labels && temperatureDataset.labels.slice(-1)[0] as string}</p>
-            </div>
         </div>
     );
 }

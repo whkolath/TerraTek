@@ -9,7 +9,7 @@ import {
     NavbarMenuItem,
     Link,
     Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 const Layout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -26,8 +26,8 @@ const Layout = ({ children }) => {
 
 
 return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Navbar onMenuOpenChange={setIsMenuOpen} style={{ display: 'flex', justifyContent: 'flex-start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column'}}>
+       <Navbar className="h-[50px]" onMenuOpenChange={setIsMenuOpen} style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <NavbarContent>
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -83,7 +83,7 @@ return (
             </NavbarMenu>
         </Navbar>
 
-        <main>
+        <main className="h-[calc(100vh-50px)]">
             {children}
         </main>
     </div>
