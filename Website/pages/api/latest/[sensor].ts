@@ -19,7 +19,7 @@ export default async function handler(
 ): Promise<void> {
     try {
         const sensor_id = req.query.sensor;
-        const [results] = await db.execute<mysql.RowDataPacket[]>('SELECT r.* FROM Readings r JOIN Sensors s ON r.Sensor_ID = s.Sensor_ID WHERE r.Sensor_ID = ? ORDER BY r.Sensor_Timestamp DESC LIMIT 36', [sensor_id]);
+        const [results] = await db.execute<mysql.RowDataPacket[]>('SELECT r.* FROM Readings r JOIN Sensors s ON r.Sensor_ID = s.Sensor_ID WHERE r.Sensor_ID = ? ORDER BY r.Sensor_Timestamp DESC LIMIT 1', [sensor_id]);
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);

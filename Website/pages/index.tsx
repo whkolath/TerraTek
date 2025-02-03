@@ -4,7 +4,6 @@ import 'chart.js/auto';
 import { ChartData } from 'chart.js';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@heroui/react";
 
-
 const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
     ssr: false,
 });
@@ -71,8 +70,7 @@ const LineChart = () => {
                         {
                             label: 'Temperature',
                             data: temperatureData.map((data: { Average_Reading: number }) => {
-                                if (data.Average_Reading != null)
-                                {
+                                if (data.Average_Reading != null) {
                                     return data.Average_Reading * 9 / 5 + 32;
                                 }
                                 else
@@ -168,7 +166,7 @@ const LineChart = () => {
 
         fetchData();
     }, [value, sensor]);
-    
+
     function downloadChart() {
         const canvas = document.querySelector('#Chart canvas');
         if (canvas) {
@@ -184,9 +182,11 @@ const LineChart = () => {
     }
 
     return (
+
         <div className="w-full grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-4 p-4 box-border">
             <div className="p-6 bg-white border border-gray-300 shadow-md rounded-lg">
                 <h2 className="text-lg font-bold">Temperature</h2>
+  
 
                 {temperatureDataset && <Line data={temperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
                 <p>Current Value: {temperatureDataset && typeof temperatureDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((temperatureDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()}°F</p>
@@ -212,7 +212,7 @@ const LineChart = () => {
                 <p className="text-xs">Last reading: {illuminanceDataset && illuminanceDataset.labels && illuminanceDataset.labels.slice(-1)[0] as string}</p>
             </div>
             <div className="lg:col-span-4 md:col-span-2 col-span-1 p-6 bg-white border border-gray-300 shadow-md rounded-lg">
-                <h2 className="text-lg font-bold">{Number(value)/24} Day {sensorData.length > 0 && sensorData[Number(sensor)-1] ? sensorData[Number(sensor)-1].Sensor_Description : 'MKR_Environmental_Shield_Temperature'} History</h2>
+                <h2 className="text-lg font-bold">{Number(value) / 24} Day {sensorData.length > 0 && sensorData[Number(sensor) - 1] ? sensorData[Number(sensor) - 1].Sensor_Description : 'MKR_Environmental_Shield_Temperature'} History</h2>
                 {/* <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
                     <Input label="Time Span" value={value} onValueChange={setValue}/>
                 </div> */}
@@ -243,12 +243,12 @@ const LineChart = () => {
                         <Button variant="bordered">Select Sensor</Button>
                     </DropdownTrigger>
                     <DropdownMenu aria-label="Static Actions" onAction={(key) => setSensor(key.toString())}>
-                    {sensorData.map((sensor: Sensor) => (
-                                            <DropdownItem key={sensor.Sensor_ID.toString()}>{sensor.Sensor_Description}</DropdownItem>
-                                        ))}
+                        {sensorData.map((sensor: Sensor) => (
+                            <DropdownItem key={sensor.Sensor_ID.toString()}>{sensor.Sensor_Description}</DropdownItem>
+                        ))}
                     </DropdownMenu>
                 </Dropdown>
-             
+
                 <Button color="primary" onPress={downloadChart}>Download</Button>
                 <div id="Chart">
                     {longTemperatureDataset && <Line data={longTemperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
