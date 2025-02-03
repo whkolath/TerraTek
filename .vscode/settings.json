@@ -8,5 +8,8 @@
         "string_view": "cpp",
         "ostream": "cpp",
         "*.tcc": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "yaxis"
+    ]
 }

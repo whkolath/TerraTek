@@ -12,14 +12,13 @@ const db: mysql.Pool = mysql.createPool({
     connectTimeout: 10000, // 10 seconds
 });
 
-
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ): Promise<void> {
     try {
         // const sensor_id = req.query.sensor;
-        const [results] = await db.execute<mysql.RowDataPacket[]>('SELECT * FROM Sensors');
+        const [results] = await db.execute<mysql.RowDataPacket[]>('SELECT * FROM Boards');
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);
