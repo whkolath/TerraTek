@@ -23,6 +23,7 @@ const Chart = () => {
     type SensorList = {
         Sensor_ID: Array<number>;
         Sensor_Description: Array<string>;
+        Units: Array<string>;
     }
 
     type BoardList = {
@@ -53,7 +54,7 @@ const Chart = () => {
         hours: [],
     });
 
-    const [value, setValue] = useState("500");
+    const [value, setValue] = useState("744");
 
     const [sensor, setSensor] = useState("2");
     const [board, setBoard] = useState("0xa8610a34362d800f");
@@ -71,6 +72,7 @@ const Chart = () => {
     const [sensorList, setSensorList] = useState<SensorList>({
         Sensor_ID: [],
         Sensor_Description: [],
+        Units: []
     })
 
     const [boardList, setBoardList] = useState<BoardList>({
@@ -168,6 +170,7 @@ const Chart = () => {
                 setSensorList({
                     Sensor_ID: sensorsData.map((sensorsData: { Sensor_ID: number }) => sensorsData.Sensor_ID),
                     Sensor_Description: sensorsData.map((sensorsData: { Sensor_Description: number }) => sensorsData.Sensor_Description),
+                    Units: sensorsData.map((sensorsData: { Units: number }) => sensorsData.Units)
                 });
                 setBoardList({
                     Board_ID: boardsData.map((boardsData: { Board_ID: number }) => boardsData.Board_ID),
@@ -187,9 +190,9 @@ const Chart = () => {
             case 1:
                 return (
                     <Plotly
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers' },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers' }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
                         ]}
                         layout={{
                             autosize: true,
@@ -198,7 +201,13 @@ const Chart = () => {
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
-                            showlegend: false
+                            showlegend: true,
+                            legend: {
+                                x: 1,
+                                xanchor: 'right',
+                                y: 1
+                            }
+
                         }}
                         config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
                         useResizeHandler={true}
@@ -210,9 +219,9 @@ const Chart = () => {
             case 2:
                 return (
                     <Plotly
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'markers' },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'markers' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'markers' }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'markers', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
                         ]}
                         layout={{
                             autosize: true,
@@ -221,20 +230,27 @@ const Chart = () => {
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
-                            showlegend: false
+                            showlegend: true,
+                            legend: {
+                                x: 1,
+                                xanchor: 'right',
+                                y: 1
+                            }
+
                         }}
                         config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
                         useResizeHandler={true}
                         style={{ width: "100%", height: "100%" }}
+
                     />
                 );
 
             case 3:
                 return (
                     <Plotly
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'bar' },
-                        { x: dataset2.dates, y: dataset2.values, type: 'bar' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'bar' }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'bar', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.dates, y: dataset2.values, type: 'bar', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
+                        { x: dataset3.dates, y: dataset3.values, type: 'bar', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
                         ]}
                         layout={{
                             autosize: true,
@@ -243,11 +259,18 @@ const Chart = () => {
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
-                            showlegend: false
+                            showlegend: true,
+                            legend: {
+                                x: 1,
+                                xanchor: 'right',
+                                y: 1
+                            }
+
                         }}
                         config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
                         useResizeHandler={true}
                         style={{ width: "100%", height: "100%" }}
+
                     />
                 );
 
@@ -255,7 +278,7 @@ const Chart = () => {
             case 4:
                 return (
                     <Plotly
-                        data={[{ x: dataset.days, y: dataset.hours, z: dataset.values, type: 'heatmap' }]}
+                        data={[{ x: dataset.days, y: dataset.hours, z: dataset.values, type: 'heatmap', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "" }]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
@@ -263,19 +286,20 @@ const Chart = () => {
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
-                            showlegend: false
+                            showlegend: true
                         }}
                         config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
                         useResizeHandler={true}
                         style={{ width: "100%", height: "100%" }}
                     />
                 );
-            default:
+
+            case 5:
                 return (
                     <Plotly
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers' },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers' }
+                        data={[{ x: dataset.values, type: 'histogram', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.values, type: 'histogram', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
+                        { x: dataset3.values, type: 'histogram', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
                         ]}
                         layout={{
                             autosize: true,
@@ -284,7 +308,71 @@ const Chart = () => {
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
-                            showlegend: false
+                            showlegend: true,
+                            legend: {
+                                x: 1,
+                                xanchor: 'right',
+                                y: 1
+                            }
+
+                        }}
+                        config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
+                        useResizeHandler={true}
+                        style={{ width: "100%", height: "100%" }}
+
+                    />
+                );
+
+            case 6:
+                return (
+                    <Plotly
+                        data={[{ x: sensor ? dataset.values : [], type: 'violin', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", box: {visible: true}, meanline: {visible: true}},
+                        { x: sensor2 ? dataset2.values : [], type: 'violin', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", box: {visible: true}, meanline: {visible: true}},
+                        { x: sensor3 ? dataset3.values : [], type: 'violin', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", box: {visible: true}, meanline: {visible: true}}
+                        ]}
+                        layout={{
+                            autosize: true,
+                            margin: { t: 20, l: 40, r: 20, b: 40 },
+                            xaxis: { automargin: true },
+                            yaxis: { automargin: true },
+                            paper_bgcolor: '#f1f5f9',
+                            plot_bgcolor: '#f1f5f9',
+                            showlegend: false,
+                            legend: {
+                                x: 1,
+                                xanchor: 'right',
+                                y: 1
+                            }
+
+                        }}
+                        config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
+                        useResizeHandler={true}
+                        style={{ width: "100%", height: "100%" }}
+
+                    />
+                );
+
+            default:
+                return (
+                    <Plotly
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
+                        ]}
+                        layout={{
+                            autosize: true,
+                            margin: { t: 20, l: 40, r: 20, b: 40 },
+                            xaxis: { automargin: true },
+                            yaxis: { automargin: true },
+                            paper_bgcolor: '#f1f5f9',
+                            plot_bgcolor: '#f1f5f9',
+                            showlegend: true,
+                            legend: {
+                                x: 1,
+                                xanchor: 'right',
+                                y: 1
+                            }
+
                         }}
                         config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
                         useResizeHandler={true}
@@ -296,7 +384,7 @@ const Chart = () => {
     }
 
     return (
-        <div className="w-full h-full grid gap-2 p-2 lg:grid-cols-4 md:grid-cols-2 lg:grid-rows-[0.75fr_2fr_0.25fr] md:grid-rows-[0.75fr_0.75fr_2fr_0.5fr]">
+        <div className="w-full h-full grid gap-2 p-2 md:grid-cols-2 lg:grid-rows-[0.2fr_1fr_0.1fr] lg:grid-cols-[0.3fr_.4fr_0.25fr_0.32fr] md:grid-rows-[0.75fr_0.75fr_2fr_0.5fr]">
             <div className="h-full bg-slate-100 shadow-sm rounded-md">
                 <div className="p-3">
                     <h1 className="text-center text-xl font-semibold font-mono">Time</h1>
@@ -307,18 +395,36 @@ const Chart = () => {
                         <div className="col-span-3">
                             <DateRangePicker className="flex items-center justify-center h-full" label="Custom" />
                         </div>
+                        <div className="col-span-3">
+                            <Dropdown className=" w-full">
+                                <DropdownTrigger>
+                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered">
+                                        Time Intervals
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu>
+                                    <DropdownItem key={1}>No Aggregation</DropdownItem>
+                                    <DropdownItem key={2}>Half Hourly</DropdownItem>
+                                    <DropdownItem key={3}>Hourly</DropdownItem>
+                                    <DropdownItem key={4}>Daily</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
                     </div>
                 </div>
             </div>
             <div className="p-4 h-full col-span-2 bg-slate-100 shadow-sm rounded-md flex-grow">
                 <h1 className="text-center text-xl font-semibold font-mono">Sensors</h1>
-                <div className="p-3 grid flex-grow gap-2 grid-cols-[0.5fr_2fr_2fr_0.05fr]">
+                <div className=" grid flex-grow gap-2 grid-cols-[0.5fr_2fr_2fr_0.05fr]">
+                    <div></div>
+                    <p className="text-sm text-center">Cluster Location</p>
+                    <p className="col-span-2 text-sm text-center">Sensor</p>
                     <h1>Sensor 1: </h1>
                     <div>
                         <Dropdown >
                             <DropdownTrigger>
                                 <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                    {board ? boardList.Board_Description[boardList.Board_ID.indexOf(board)] : "Tank Selection"}
+                                    {board ? boardList.Board_Description[boardList.Board_ID.indexOf(board)] : "Cluster Selection"}
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu onAction={(key) => setBoard(key.toString())}>
@@ -349,7 +455,7 @@ const Chart = () => {
                         <Dropdown>
                             <DropdownTrigger>
                                 <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                    {board2 ? boardList.Board_Description[boardList.Board_ID.indexOf(board2)] : "Tank Selection"}
+                                    {board2 ? boardList.Board_Description[boardList.Board_ID.indexOf(board2)] : "Cluster Selection"}
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu onAction={(key) => setBoard2(key.toString())}>
@@ -363,7 +469,7 @@ const Chart = () => {
                         <Dropdown>
                             <DropdownTrigger>
                                 <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                    {sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "Sensor Selection"}
+                                    {sensor2 && sensorList.Sensor_Description[Number(sensor2) - 1] ? sensorList.Sensor_Description[Number(sensor2) - 1] : "Sensor Selection"}
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu onAction={(key) => setSensor2(key.toString())}>
@@ -383,7 +489,7 @@ const Chart = () => {
                         <Dropdown>
                             <DropdownTrigger>
                                 <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                    {board3 ? boardList.Board_Description[boardList.Board_ID.indexOf(board3)] : "Tank Selection"}
+                                    {board3 ? boardList.Board_Description[boardList.Board_ID.indexOf(board3)] : "Cluster Selection"}
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu onAction={(key) => setBoard3(key.toString())}>
@@ -397,7 +503,7 @@ const Chart = () => {
                         <Dropdown>
                             <DropdownTrigger>
                                 <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                    {sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "Sensor Selection"}
+                                    {sensor3 && sensorList.Sensor_Description[Number(sensor3) - 1] ? sensorList.Sensor_Description[Number(sensor3) - 1] : "Sensor Selection"}
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu onAction={(key) => setSensor3(key.toString())}>
@@ -422,6 +528,8 @@ const Chart = () => {
                         <Button onPress={() => setChartType(2)} className="shadow-sm" color="primary" radius="sm">Scatter Plot</Button>
                         <Button onPress={() => setChartType(3)} className="shadow-sm" color="primary" radius="sm">Bar Chart</Button>
                         <Button onPress={() => setChartType(4)} className="shadow-sm" color="primary" radius="sm">Heatmap</Button>
+                        <Button onPress={() => setChartType(5)} className="shadow-sm" color="primary" radius="sm">Histogram</Button>
+                        <Button onPress={() => setChartType(6)} className="shadow-sm" color="primary" radius="sm">Violin Chart</Button>
                     </div>
                 </div>
             </div>
@@ -438,32 +546,32 @@ const Chart = () => {
 
                 <div className="grid grid-cols-3">
                     <div className="text-center">
-                        <h1>Average: {collect(dataset.values.filter(value => value !== null)).average().toFixed(2)}</h1>
-                        <h1>Min: {collect(dataset.values.filter(value => value !== null)).min().toFixed(2)}</h1>
-                        <h1>Max: {collect(dataset.values.filter(value => value !== null)).max().toFixed(2)}</h1>
-                        <h1>Median: {collect(dataset.values.filter(value => value !== null)).median().toFixed(2)}</h1>
+                        <p className="text-sm">Average: {collect(dataset.values.filter(value => value !== null)).average().toFixed(2)} {sensor && sensorList.Units[Number(sensor) - 1]}</p>
+                        <p className="text-sm">Min: {collect(dataset.values.filter(value => value !== null)).min().toFixed(2)} {sensor && sensorList.Units[Number(sensor) - 1]}</p>
+                        <p className="text-sm">Max: {collect(dataset.values.filter(value => value !== null)).max().toFixed(2)} {sensor && sensorList.Units[Number(sensor) - 1]}</p>
+                        <p className="text-sm">Median: {collect(dataset.values.filter(value => value !== null)).median().toFixed(2)} {sensor && sensorList.Units[Number(sensor) - 1]}</p>
                     </div>
                     {sensor2 && (<div className="text-center">
-                        <h1>Average: {collect(dataset2.values.filter(value => value !== null)).average().toFixed(2)}</h1>
-                        <h1>Min: {collect(dataset2.values.filter(value => value !== null)).min().toFixed(2)}</h1>
-                        <h1>Max: {collect(dataset2.values.filter(value => value !== null)).max().toFixed(2)}</h1>
-                        <h1>Median: {collect(dataset2.values.filter(value => value !== null)).median().toFixed(2)}</h1>
+                        <p className="text-sm">Average: {collect(dataset2.values.filter(value => value !== null)).average().toFixed(2)} {sensor2 && sensorList.Units[Number(sensor2) - 1]}</p>
+                        <p className="text-sm">Min: {collect(dataset2.values.filter(value => value !== null)).min().toFixed(2)} {sensor2 && sensorList.Units[Number(sensor2) - 1]}</p>
+                        <p className="text-sm">Max: {collect(dataset2.values.filter(value => value !== null)).max().toFixed(2)} {sensor2 && sensorList.Units[Number(sensor2) - 1]}</p>
+                        <p className="text-sm">Median: {collect(dataset2.values.filter(value => value !== null)).median().toFixed(2)} {sensor2 && sensorList.Units[Number(sensor2) - 1]}</p>
                     </div>)}
 
-                     {sensor3 && (<div className="text-center">
-                        <h1>Average: {collect(dataset3.values.filter(value => value !== null)).average().toFixed(2)}</h1>
-                        <h1>Min: {collect(dataset3.values.filter(value => value !== null)).min().toFixed(2)}</h1>
-                        <h1>Max: {collect(dataset3.values.filter(value => value !== null)).max().toFixed(2)}</h1>
-                        <h1>Median: {collect(dataset3.values.filter(value => value !== null)).median().toFixed(2)}</h1>
+                    {sensor3 && (<div className="text-center">
+                        <p className="text-sm">Average: {collect(dataset3.values.filter(value => value !== null)).average().toFixed(2)} {sensor3 && sensorList.Units[Number(sensor3) - 1]}</p>
+                        <p className="text-sm">Min: {collect(dataset3.values.filter(value => value !== null)).min().toFixed(2)} {sensor3 && sensorList.Units[Number(sensor3) - 1]}</p>
+                        <p className="text-sm">Max: {collect(dataset3.values.filter(value => value !== null)).max().toFixed(2)} {sensor3 && sensorList.Units[Number(sensor3) - 1]}</p>
+                        <p className="text-sm">Median: {collect(dataset3.values.filter(value => value !== null)).median().toFixed(2)} {sensor3 && sensorList.Units[Number(sensor3) - 1]}</p>
                     </div>)}
 
                 </div>
                 <div className="flex-grow w-full h-0">
 
                     <Plotly
-                        data={[{ y: dataset.values, type: 'box', name: " " },
-                        { y: dataset2.values, type: 'box',  name: "  " },
-                        { y: dataset3.values, type: 'box',  name: "   " }
+                        data={[{ y: dataset.values, type: 'box', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : " " },
+                        { y: dataset2.values, type: 'box', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : " " },
+                        { y: dataset3.values, type: 'box', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : " " }
                         ]}
                         layout={{
                             autosize: true,
