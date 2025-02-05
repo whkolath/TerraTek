@@ -190,15 +190,17 @@ const Chart = () => {
             case 1:
                 return (
                     <Plotly
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false, },
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
-                            xaxis: { automargin: true },
-                            yaxis: { automargin: true },
+                            xaxis: { automargin: true},
+                            yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: {text: sensor ? sensorList.Units[Number(sensor) - 1] : ""} },
+                            yaxis2: sensor2 ? { anchor: 'x', side: "right", overlaying: "y", automargin: true, title: {text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
+                            yaxis3: sensor3 ? { anchor: 'free', side: "left", overlaying: "y", position: 0.04, automargin: true, title: {text: sensor3 ? sensorList.Units[Number(sensor3) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
                             showlegend: true,
@@ -220,14 +222,16 @@ const Chart = () => {
                 return (
                     <Plotly
                         data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'markers', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false,  yaxis: 'y2'  },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false,  yaxis: 'y3'  }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
                             xaxis: { automargin: true },
-                            yaxis: { automargin: true },
+                            yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: {text: sensor ? sensorList.Units[Number(sensor) - 1] : ""} },
+                            yaxis2: sensor2 ? { anchor: 'x', side: "right", overlaying: "y", automargin: true, title: {text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
+                            yaxis3: sensor3 ? { anchor: 'free', side: "left", overlaying: "y", position: 0.04, automargin: true, title: {text: sensor3 ? sensorList.Units[Number(sensor3) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
                             showlegend: true,
@@ -249,14 +253,16 @@ const Chart = () => {
                 return (
                     <Plotly
                         data={[{ x: dataset.dates, y: dataset.values, type: 'bar', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.dates, y: dataset2.values, type: 'bar', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
-                        { x: dataset3.dates, y: dataset3.values, type: 'bar', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
+                        { x: dataset2.dates, y: dataset2.values, type: 'bar', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false,  yaxis: 'y2'  },
+                        { x: dataset3.dates, y: dataset3.values, type: 'bar', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false,  yaxis: 'y3'  }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
                             xaxis: { automargin: true },
-                            yaxis: { automargin: true },
+                            yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: {text: sensor ? sensorList.Units[Number(sensor) - 1] : ""} },
+                            yaxis2: sensor2 ? { anchor: 'x', side: "right", overlaying: "y", automargin: true, title: {text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
+                            yaxis3: sensor3 ? { anchor: 'free', side: "left", overlaying: "y", position: 0.04, automargin: true, title: {text: sensor3 ? sensorList.Units[Number(sensor3) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
                             showlegend: true,
@@ -298,8 +304,8 @@ const Chart = () => {
                 return (
                     <Plotly
                         data={[{ x: dataset.values, type: 'histogram', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.values, type: 'histogram', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
-                        { x: dataset3.values, type: 'histogram', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
+                        { x: dataset2.values, type: 'histogram', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false},
+                        { x: dataset3.values, type: 'histogram', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false}
                         ]}
                         layout={{
                             autosize: true,
@@ -327,7 +333,7 @@ const Chart = () => {
                 return (
                     <Plotly
                         data={[{ x: sensor ? dataset.values : [], type: 'violin', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", box: {visible: true}, meanline: {visible: true}},
-                        { x: sensor2 ? dataset2.values : [], type: 'violin', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", box: {visible: true}, meanline: {visible: true}},
+                        { x: sensor2 ? dataset2.values : [], type: 'violin', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", box: {visible: true}, meanline: {visible: true} },
                         { x: sensor3 ? dataset3.values : [], type: 'violin', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", box: {visible: true}, meanline: {visible: true}}
                         ]}
                         layout={{
@@ -356,14 +362,16 @@ const Chart = () => {
                 return (
                     <Plotly
                         data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false,  yaxis: 'y2'  },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false,  yaxis: 'y3'  }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
                             xaxis: { automargin: true },
-                            yaxis: { automargin: true },
+                            yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: {text: sensor ? sensorList.Units[Number(sensor) - 1] : ""} },
+                            yaxis2: sensor2 ? { anchor: 'x', side: "right", overlaying: "y", automargin: true, title: {text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
+                            yaxis3: sensor3 ? { anchor: 'free', side: "left", overlaying: "y", position: 0.04, automargin: true, title: {text: sensor3 ? sensorList.Units[Number(sensor3) - 1] : ""} } : {side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false},
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
                             showlegend: true,
