@@ -14,7 +14,7 @@ const Layout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
     const menuItems = [
-        { name: "Home", link: "/" },
+        { name: "Home", link: "/home" },
         { name: "Freshwater Tank", link: "/tank1" },
         { name: "Greywater Tank", link: "/tank2" },
         { name: "Weather Conditions", link: "/weather" },
