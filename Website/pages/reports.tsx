@@ -1,17 +1,23 @@
 import dynamic from 'next/dynamic';
 export const Plotly = dynamic(() => import('react-plotly.js'), { ssr: false });
-import { Button } from "@heroui/button";
 import {
     Dropdown,
     DropdownTrigger,
     DropdownMenu,
-    DropdownItem
-} from "@heroui/dropdown";
-import { DateRangePicker } from "@heroui/react";
+    DropdownItem,
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerBody,
+    DrawerFooter,
+    Button,
+    useDisclosure,
+    DateRangePicker
+} from "@heroui/react";
+
 import { useEffect, useState } from 'react';
 import { collect } from "collect.js";
-import ColorPicker from 'rc-color-picker';
-import 'rc-color-picker/assets/index.css';
+import { CompactPicker } from 'react-color';
 
 
 const Chart = () => {
@@ -34,6 +40,7 @@ const Chart = () => {
     }
 
 
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const [dataset, setDataset] = useState<DataSet>({
         dates: [],
@@ -492,12 +499,9 @@ const Chart = () => {
                         </Dropdown>
                     </div>
                     <div>
-                        <ColorPicker
-                            animation="slide-up"
-                            color={color}
-                            onChange={(newColor: { color: string }) => setColor(newColor.color)}
-                            placement="bottomLeft"
-                        />
+                        <div>
+                            <CompactPicker color={color} onChangeComplete={(color) => setColor(color.hex)} />
+                        </div>
                     </div>
 
 
@@ -551,12 +555,9 @@ const Chart = () => {
                     </div>
 
                     <div>
-                        <ColorPicker
-                            animation="slide-up"
-                            color={color2}
-                            onChange={(newColor: { color: string }) => setColor2(newColor.color)}
-                            placement="bottomLeft"
-                        />
+                        <div>
+                            <CompactPicker color={color2} onChangeComplete={(color) => setColor2(color.hex)} />
+                        </div>
                     </div>
 
                     <h1>Sensor 3: </h1>
@@ -607,14 +608,11 @@ const Chart = () => {
                     <div>
                         <Button onPress={() => [setSensor3(null), setBoard3(null)]} className="shadow-sm" color="danger" radius="sm" size="sm">Clear</Button>
                     </div>
+
                     <div>
-                        <ColorPicker
-                            animation="slide-up"
-                            color={color3}
-                            onChange={(newColor: { color: string }) => setColor3(newColor.color)}
-                            placement="bottomLeft"
-                        />
+                        <CompactPicker color={color3} onChangeComplete={(color) => setColor3(color.hex)} />
                     </div>
+
                 </div>
 
 
@@ -706,6 +704,27 @@ const Chart = () => {
                         </DropdownMenu>
                     </Dropdown>
                 </div>
+                <Button onPress={onOpen}>Open Drawer</Button>
+                <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>
+                    <DrawerContent>
+                        {(onClose) => (
+                            <>
+                                <DrawerHeader className="flex flex-col gap-1">Drawer Title</DrawerHeader>
+                                <DrawerBody>
+                                    
+                                </DrawerBody>
+                                <DrawerFooter>
+                                    <Button color="danger" variant="light" onPress={onClose}>
+                                        Close
+                                    </Button>
+                                    <Button color="primary" onPress={onClose}>
+                                        Action
+                                    </Button>
+                                </DrawerFooter>
+                            </>
+                        )}
+                    </DrawerContent>
+                </Drawer>
             </div>
 
         </div>

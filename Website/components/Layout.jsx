@@ -10,8 +10,10 @@ import {
     Link,
 } from "@heroui/react";
 
+
 const Layout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
 
     const menuItems = [
         { name: "Home", link: "/home" },
