@@ -5,14 +5,19 @@ import {
     DropdownTrigger,
     DropdownMenu,
     DropdownItem,
-    Drawer,
-    DrawerContent,
-    DrawerHeader,
-    DrawerBody,
-    DrawerFooter,
+    // Drawer,
+    // DrawerContent,
+    // DrawerHeader,
+    // DrawerBody,
+    // DrawerFooter,
+    DateRangePicker,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    // ModalFooter,
     Button,
     useDisclosure,
-    DateRangePicker
 } from "@heroui/react";
 
 import { useEffect, useState } from 'react';
@@ -21,6 +26,9 @@ import { CompactPicker } from 'react-color';
 
 
 const Chart = () => {
+    const { isOpen: isOpen, onOpen: onOpen, onClose: onClose } = useDisclosure();
+    const { isOpen: isOpen2, onOpen: onOpen2, onClose: onClose2 } = useDisclosure();
+    const { isOpen: isOpen3, onOpen: onOpen3, onClose: onClose3 } = useDisclosure();
     type DataSet = {
         dates: Array<Date>;
         values: Array<number>;
@@ -39,8 +47,6 @@ const Chart = () => {
         Board_Description: Array<string>;
     }
 
-
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     const [dataset, setDataset] = useState<DataSet>({
         dates: [],
@@ -77,9 +83,9 @@ const Chart = () => {
 
     const [chartType, setChartType] = useState(1);
 
-    const [color, setColor] = useState('#1f77b4');
-    const [color2, setColor2] = useState('#ff7f0e');
-    const [color3, setColor3] = useState('#2ca02c');
+    const [color, setColor] = useState('#0062B1');
+    const [color2, setColor2] = useState('#194D33');
+    const [color3, setColor3] = useState('#9F0500');
 
     console.log(board);
     const [sensorList, setSensorList] = useState<SensorList>({
@@ -499,9 +505,16 @@ const Chart = () => {
                         </Dropdown>
                     </div>
                     <div>
-                        <div>
-                            <CompactPicker color={color} onChangeComplete={(color) => setColor(color.hex)} />
-                        </div>
+                        <Button size="sm" onPress={onOpen} >Select Color</Button>
+                        <Modal isOpen={isOpen} onClose={onClose}>
+                            <ModalContent>
+                                <ModalHeader className="flex flex-col gap-1">Select Color</ModalHeader>
+                                <ModalBody>
+                                    <CompactPicker className="center" color={color} onChangeComplete={(color) => setColor(color.hex)} />
+                                </ModalBody>
+                            </ModalContent>
+                        </Modal>
+
                     </div>
 
 
@@ -555,9 +568,17 @@ const Chart = () => {
                     </div>
 
                     <div>
-                        <div>
-                            <CompactPicker color={color2} onChangeComplete={(color) => setColor2(color.hex)} />
-                        </div>
+                        <Button size="sm" onPress={onOpen2}>Select Color</Button>
+                        <Modal isOpen={isOpen2} onClose={onClose2}>
+                            <ModalContent>
+                                <ModalHeader className="flex flex-col gap-1">Modal Title</ModalHeader>
+                                <ModalBody>
+                                    <div>
+                                        <CompactPicker className="center" color={color2} onChangeComplete={(color) => setColor2(color.hex)} />
+                                    </div>
+                                </ModalBody>
+                            </ModalContent>
+                        </Modal>
                     </div>
 
                     <h1>Sensor 3: </h1>
@@ -610,7 +631,17 @@ const Chart = () => {
                     </div>
 
                     <div>
-                        <CompactPicker color={color3} onChangeComplete={(color) => setColor3(color.hex)} />
+                        <Button size="sm" onPress={onOpen3}>Select Color</Button>
+                        <Modal isOpen={isOpen3} onClose={onClose3}>
+                            <ModalContent>
+                                <ModalHeader className="flex flex-col gap-1">Modal Title</ModalHeader>
+                                <ModalBody>
+                                    <div>
+                                        <CompactPicker className="center" color={color3} onChangeComplete={(color) => setColor3(color.hex)} />
+                                    </div>
+                                </ModalBody>
+                            </ModalContent>
+                        </Modal>
                     </div>
 
                 </div>
@@ -704,8 +735,8 @@ const Chart = () => {
                         </DropdownMenu>
                     </Dropdown>
                 </div>
-                <Button onPress={onOpen}>Open Drawer</Button>
-                <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>
+                {/* <Button onPress={onOpen}>Open Drawer</Button> */}
+                {/* <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>
                     <DrawerContent>
                         {(onClose) => (
                             <>
@@ -724,7 +755,7 @@ const Chart = () => {
                             </>
                         )}
                     </DrawerContent>
-                </Drawer>
+                </Drawer> */}
             </div>
 
         </div>

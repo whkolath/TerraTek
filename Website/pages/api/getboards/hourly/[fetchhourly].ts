@@ -18,12 +18,12 @@ export default async function handler(
     res: NextApiResponse
 ): Promise<void> {
     try {
-        const Board_ID = req.query.specify;
+        const Board_ID = req.query.fetchhourly;
         const [results] = await db.execute<mysql.RowDataPacket[]>(
             `SELECT 
                 r.Board_ID
             FROM
-                Boards r
+                Readings r
             WHERE 
                 Board_ID
             REGEXP
