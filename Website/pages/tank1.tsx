@@ -1,172 +1,193 @@
+import { NextPage } from "next";
+import Head from "next/head";
+import Image from "next/image";
 import dynamic from 'next/dynamic';
-import 'chart.js/auto';
-import { ChartData } from 'chart.js';
-const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
-    ssr: false,
-});
+export const PlotlyComponent = dynamic(() => import('react-plotly.js'), { ssr: false });
 
-import { useEffect, useState } from 'react';
-
-
-const LineChart = () => {
-
-
-    const [temperatureDataset, setTemperatureDataset] = useState<ChartData<'line'> | null>(null);
-    const [humidityDataset, setHumidityDataset] = useState<ChartData<'line'> | null>(null);
-    const [pressureDataset, setPressureDataset] = useState<ChartData<'line'> | null>(null);
-    const [illuminanceDataset, setIlluminanceDataset] = useState<ChartData<'line'> | null>(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [temperatureResponse, humidityResponse, pressureResponse, illuminanceResponse] = await Promise.all([
-                    fetch("/api/latest/2"),
-                    fetch("/api/latest/3"),
-                    fetch("/api/latest/4"),
-                    fetch("/api/latest/5")
-                ]);
-
-                const temperatureData = await temperatureResponse.json();
-                
-                const humidityData = await humidityResponse.json();
-                const pressureData = await pressureResponse.json();
-                const illuminanceData = await illuminanceResponse.json();
-
-                temperatureData.reverse();
-                humidityData.reverse();
-                pressureData.reverse();
-                illuminanceData.reverse();
-
-                const temperatureLabels = temperatureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                })
-                );
-
-                setTemperatureDataset({
-                    labels: temperatureLabels,
-                    datasets: [
-                        {
-                            label: 'Temperature',
-                            data: temperatureData.map((data: { Sensor_Value: number }) => (data.Sensor_Value * 9 / 5) + 32),
-                            fill: false,
-                            borderColor: 'rgb(255, 0, 0)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
-                
-
-
-                const humidityLabels = humidityData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                }));
-
-                setHumidityDataset({
-                    labels: humidityLabels,
-                    datasets: [
-                        {
-                            label: 'Humidity',
-                            data: humidityData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
-                            fill: false,
-                            borderColor: 'rgb(11, 173, 35)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
-
-
-                const pressureLabels = pressureData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                }));
-
-                setPressureDataset({
-                    labels: pressureLabels,
-                    datasets: [
-                        {
-                            label: 'Pressure',
-                            data: pressureData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
-                            fill: false,
-                            borderColor: 'rgb(0, 0, 255)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
-
-
-                const illuminanceLabels = illuminanceData.map((data: { Sensor_Timestamp: string }) => new Date(data.Sensor_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                }));
-
-                setIlluminanceDataset({
-                    labels: illuminanceLabels,
-                    datasets: [
-                        {
-                            label: 'Illuminance',
-                            data: illuminanceData.map((data: { Sensor_Value: number }) => data.Sensor_Value),
-                            fill: false,
-                            borderColor: 'rgb(255, 140, 0)',
-                            tension: 0.1,
-                        },
-                    ],
-                });
-            } catch (error) {
-                console.error("Error fetching weather data:", error);
-            }
-        };
-
-        fetchData();
-    }, []);
-
+const Tank: NextPage = () => {
     return (
-        <div className="w-full grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-4 p-4 box-border">
-            <div className="lg:col-span-4 md:col-span-2 col-span-1 p-6 bg-white border border-gray-300 shadow-md rounded-lg">
+        <>
+            <Head>
+                <title>Tank Dashboard</title>
+                <meta name="description" content="Tank Dashboard UI" />
+            </Head>
 
-                <div className="flex flex-wrap justify-between">
-                    <div className="p-6">
-                        <div className="flex justify-center">
-                            <h2 className="text-lg">Tank Level</h2>
-                        </div>
-                        {temperatureDataset && <Line data={temperatureDataset} options={{ scales: { y: { title: { display: true, text: '°F' } } }, plugins: { legend: { display: false } } }} />}
-                        <p>Current Value: {temperatureDataset && typeof temperatureDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((temperatureDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()}°F</p>
-                        <p className="text-xs">Last reading: {temperatureDataset && temperatureDataset.labels && temperatureDataset.labels.slice(-1)[0] as string}</p>
-                    </div>
-                    <div className="p-6">
-                        <div className="flex justify-center">
-                            <h2 className="text-lg">Water Temperature</h2>
-                        </div>
-                        {humidityDataset && <Line data={humidityDataset} options={{ scales: { y: { title: { display: true, text: '%' } } }, plugins: { legend: { display: false } } }} />}
-                        <p>Current Value: {humidityDataset && typeof humidityDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((humidityDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()}%</p>
-                        <p className="text-xs">Last reading: {humidityDataset && humidityDataset.labels && humidityDataset.labels.slice(-1)[0] as string}</p>
-                    </div>
-                    <div className="p-6">
-                        <div className="flex justify-center">
-                            <h2 className="text-lg">PH</h2>
-                        </div>
-                        {pressureDataset && <Line data={pressureDataset} options={{ scales: { y: { title: { display: true, text: 'kPa' } } }, plugins: { legend: { display: false } } }} />}
-                        <p>Current Value: {pressureDataset && typeof pressureDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((pressureDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()} kPa</p>
-                        <p className="text-xs">Last reading: {pressureDataset && pressureDataset.labels && pressureDataset.labels.slice(-1)[0] as string}</p>
-                    </div>
-                    <div className="p-6">
-                        <div className="flex justify-center">
+            <main className="h-full bg-gray-100 p-6">
+                {/* Title / Header */}
+                <h1 className="text-2xl font-bold mb-6">Tank Dashboard</h1>
 
-                            <h2 className="text-lg">TDC</h2>
+                {/* Two-Column Layout for Current / Historical */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Current Section */}
+                    <section>
+                        <h2 className="text-xl font-semibold mb-3">Current</h2>
+                        <div className="bg-white rounded-lg shadow p-4">
+                            <div className="flex justify-center mb-4">
+                                <Image
+                                    src="/tank_UI.svg"
+                                    alt="Tank SVG"
+                                    width={100}
+                                    height={100}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    Water Level
+                                </div>
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    <PlotlyComponent
+                                        data={[
+                                            {
+                                                x: ["Jan", "Feb", "Mar", "Apr", "May"],
+                                                y: [10, 15, 13, 17, 20],
+                                                type: "scatter",
+                                                mode: "lines+markers",
+                                                marker: { color: "blue" },
+                                                name: "Water pH",
+                                            },
+                                        ]}
+                                        layout={{ width: 600, height: 400, title: "Monthly Water pH" }}
+                                        className="mx-auto"
+                                    />
+                                    Water pH
+                                </div>
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    <PlotlyComponent
+                                        data={[
+                                            {
+                                                x: ["Jan", "Feb", "Mar", "Apr", "May"],
+                                                y: [10, 15, 13, 17, 20],
+                                                type: "scatter",
+                                                mode: "lines+markers",
+                                                marker: { color: "blue" },
+                                                name: "Water pH",
+                                            },
+                                        ]}
+                                        layout={{ width: 600, height: 400, title: "Monthly Water pH" }}
+                                        className="mx-auto"
+                                    />
+                                    TDC
+                                </div>
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    <div>
+                                        <PlotlyComponent
+                                            data={[
+                                                {
+                                                    x: ["Jan", "Feb", "Mar", "Apr", "May"],
+                                                    y: [10, 15, 13, 17, 20],
+                                                    type: "scatter",
+                                                    mode: "lines+markers",
+                                                    marker: { color: "blue" },
+                                                    name: "Water pH",
+                                                },
+                                            ]}
+                                            layout={{ width: 600, height: 400, title: "Monthly Water pH" }}
+                                            className="mx-auto"
+                                        />
+                                    </div>
+                                    Water Temperature
+                                </div>
+                            </div>
                         </div>
-                        {illuminanceDataset && <Line data={illuminanceDataset} options={{ scales: { y: { title: { display: true, text: 'lux' } } }, plugins: { legend: { display: false } } }} />}
-                        <p>Current Value: {illuminanceDataset && typeof illuminanceDataset.datasets[0].data.slice(-1)[0] === 'number' && (Math.round((illuminanceDataset.datasets[0].data.slice(-1)[0] as number) * 100) / 100).toString()} lux</p>
-                        <p className="text-xs">Last reading: {illuminanceDataset && illuminanceDataset.labels && illuminanceDataset.labels.slice(-1)[0] as string}</p>
-                    </div>
+                    </section>
+
+                    {/* Predicted Section */}
+                    <section>
+                        <h2 className="text-xl font-semibold mb-3">Predicted</h2>
+                        <div className="bg-white rounded-lg shadow p-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    <Image
+                                        src="/tank_UI.svg"
+                                        alt="Tank SVG"
+                                        width={100}
+                                        height={100}
+                                    />
+                                    <strong>Water Level</strong>
+                                </div>
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    <PlotlyComponent
+                                        data={[
+                                            {
+                                                x: ["Jan", "Feb", "Mar", "Apr", "May"],
+                                                y: [10, 15, 13, 17, 20],
+                                                type: "scatter",
+                                                mode: "lines+markers",
+                                                marker: { color: "blue" },
+                                                name: "Water pH",
+                                            },
+                                        ]}
+                                        layout={{ width: 600, height: 400, title: "Monthly Water pH" }}
+                                        className="mx-auto"
+                                    />
+                                    <strong>Water pH</strong>
+                                </div>
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    <PlotlyComponent
+                                        data={[
+                                            {
+                                                x: ["Jan", "Feb", "Mar", "Apr", "May"],
+                                                y: [10, 15, 13, 17, 20],
+                                                type: "scatter",
+                                                mode: "lines+markers",
+                                                marker: { color: "blue" },
+                                                name: "Water pH",
+                                            },
+                                        ]}
+                                        layout={{ width: 600, height: 400, title: "Monthly Water pH" }}
+                                        className="mx-auto"
+                                    />
+                                    <strong>TDC</strong>
+                                </div>
+                                <div className="bg-gray-50 p-3 text-center rounded shadow-sm">
+                                    <div>
+                                        <PlotlyComponent
+                                            data={[
+                                                {
+                                                    x: ["Jan", "Feb", "Mar", "Apr", "May"],
+                                                    y: [10, 15, 13, 17, 20],
+                                                    type: "scatter",
+                                                    mode: "lines+markers",
+                                                    marker: { color: "blue" },
+                                                    name: "Water pH",
+                                                },
+                                            ]}
+                                            layout={{ width: 600, height: 400, title: "Monthly Water pH" }}
+                                            className="mx-auto"
+                                        />
+                                        <strong>Water Temperature</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-                </div>
-            </div>
-            );
-}
 
-            export default LineChart;
+                {/* Monthly Data Section */}
+                <section className="mt-8">
+                    <h2 className="text-xl font-semibold mb-3">Historical Data</h2>
+                    <div className="bg-white rounded-lg shadow p-4">
+                        {/* Example Plotly chart */}
+                        <PlotlyComponent
+                            data={[
+                                {
+                                    x: ["Jan", "Feb", "Mar", "Apr", "May"],
+                                    y: [10, 15, 13, 17, 20],
+                                    type: "scatter",
+                                    mode: "lines+markers",
+                                    marker: { color: "blue" },
+                                    name: "Water pH",
+                                },
+                            ]}
+                            layout={{ width: 600, height: 400, title: "Monthly Water pH" }}
+                            className="mx-auto"
+                        />
+                    </div>
+                </section>
+            </main>
+        </>
+    );
+};
+
+export default Tank;

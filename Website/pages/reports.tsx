@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic';
 export const PlotlyComponent = dynamic(() => import('react-plotly.js'), { ssr: false });
 
-
 import {
     Dropdown,
     DropdownTrigger,
@@ -26,12 +25,9 @@ import { collect } from "collect.js";
 import { CirclePicker } from 'react-color';
 
 
-const Chart = () => {
-    const { isOpen: isOpen, onOpen: onOpen, onClose: onClose } = useDisclosure();
-    const { isOpen: isOpen2, onOpen: onOpen2, onClose: onClose2 } = useDisclosure();
-    const { isOpen: isOpen3, onOpen: onOpen3, onClose: onClose3 } = useDisclosure();
-    const { isOpen: isOpenHelp, onOpen: onOpenHelp, onClose: onCloseHelp } = useDisclosure();
+const Reports = () => {
 
+    // Custom data types
     type DataSet = {
         dates: Array<Date>;
         values: Array<number>;
@@ -51,9 +47,15 @@ const Chart = () => {
     }
 
     const [unitType, setUnitType] = useState(1);
-
     const [graphDiv, setGraphDiv] = useState<HTMLElement | null>(null);
 
+    // States of the color modals and help drawer
+    const { isOpen: isOpen, onOpen: onOpen, onClose: onClose } = useDisclosure();
+    const { isOpen: isOpen2, onOpen: onOpen2, onClose: onClose2 } = useDisclosure();
+    const { isOpen: isOpen3, onOpen: onOpen3, onClose: onClose3 } = useDisclosure();
+    const { isOpen: isOpenHelp, onOpen: onOpenHelp, onClose: onCloseHelp } = useDisclosure();
+
+    // States of the datasets
     const [dataset, setDataset] = useState<DataSet>({
         dates: [],
         values: [],
@@ -75,10 +77,13 @@ const Chart = () => {
         hours: [],
     });
 
+    // Download type state
     const [downloadType, setDownload] = useState("PNG");
 
+    // Selected time span
     const [time, setTime] = useState("744");
 
+    // Sensor and board selection states
     const [sensor, setSensor] = useState("2");
     const [board, setBoard] = useState("0xa8610a34362d800f");
 
@@ -89,28 +94,34 @@ const Chart = () => {
     const [board3, setBoard3] = useState<string | null>(null);
 
 
+    // Chart type
     const [chartType, setChartType] = useState(1);
 
+    // Default colors
     const [color, setColor] = useState('#3f51b5');
     const [color2, setColor2] = useState('#f44336');
     const [color3, setColor3] = useState('#4caf50');
 
+    // List of sensors, will be populated from database
     const [sensorList, setSensorList] = useState<SensorList>({
         Sensor_ID: [],
         Sensor_Description: [],
         Units: []
     })
 
+    // lists of boards, will be populated from database
     const [boardList, setBoardList] = useState<BoardList>({
         Board_ID: [],
         Board_Description: [],
     })
 
 
+    // This is where the website will react to changes the user makes. Ie. a different sensor is selected
     useEffect(() => {
         const fetchData = async () => {
             try {
 
+                // Fetch the data from the API
                 const [response, response2, response3, sensorResponse, boardResponse] = await Promise.all([
                     fetch(`/api/hourly/${time}/${sensor}`),
                     fetch(`/api/hourly/${time}/${sensor2}`),
@@ -119,12 +130,15 @@ const Chart = () => {
                     fetch(`/api/boards`)
 
                 ]);
+
+                // Parse the JSON
                 const data = await response.json();
                 const data2 = await response2.json();
                 const data3 = await response3.json();
                 const sensorsData = await sensorResponse.json();
                 const boardsData = await boardResponse.json();
 
+                // Use the JSON data to populate all of our useState variables
                 setSensorList({
                     Sensor_ID: sensorsData.map((sensorsData: { Sensor_ID: number }) => sensorsData.Sensor_ID),
                     Sensor_Description: sensorsData.map((sensorsData: { Sensor_Description: number }) => sensorsData.Sensor_Description),
@@ -207,17 +221,20 @@ const Chart = () => {
                 });
 
 
-
-
+                // Handle potential API errors
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         };
 
         fetchData();
-    }, [time, sensor, board, sensor2, board2, sensor3, board3, unitType]);
+    }, [time, sensor, board, sensor2, board2, sensor3, board3, unitType]); // These are the dependant variables
 
+
+    // This function handles download functionality
     const download = async function () {
+
+        // Switch case to download data in the selected format
         switch (downloadType) {
             case "CSV":
                 try {
@@ -280,6 +297,7 @@ const Chart = () => {
                 }
                 break;
 
+            // Default is PNG
             default:
                 if (graphDiv) {
                     try {
@@ -306,8 +324,11 @@ const Chart = () => {
     }
 
 
+    // This function creates the charts
     function createCart() {
         switch (chartType) {
+
+            // Line Chart
             case 1:
                 return (
                     <PlotlyComponent
@@ -340,6 +361,7 @@ const Chart = () => {
                     />
                 );
 
+            // Scatter Plot
             case 2:
                 return (
                     <PlotlyComponent
@@ -372,6 +394,7 @@ const Chart = () => {
                     />
                 );
 
+            // Bar Chart
             case 3:
                 return (
                     <PlotlyComponent
@@ -404,7 +427,7 @@ const Chart = () => {
                     />
                 );
 
-
+            // Heatmap
             case 4:
                 return (
                     <PlotlyComponent
@@ -425,6 +448,7 @@ const Chart = () => {
                     />
                 );
 
+            // Histogram
             case 5:
                 return (
                     <PlotlyComponent
@@ -455,6 +479,7 @@ const Chart = () => {
                     />
                 );
 
+            // Violin
             case 6:
                 return (
                     <PlotlyComponent
@@ -485,6 +510,7 @@ const Chart = () => {
                     />
                 );
 
+            // Default is line
             default:
                 return (
                     <PlotlyComponent
@@ -521,17 +547,25 @@ const Chart = () => {
 
     return (
         <div className="w-full h-full grid gap-2 p-2 grid-rows-[0.2fr_1fr_0.1fr] grid-cols-4">
+
+            {/* Time Section */}
             <div className="h-full bg-slate-100 shadow-sm rounded-md">
                 <div className="p-3">
                     <h1 className="text-center text-xl font-semibold font-mono">Time</h1>
                     <div className="grid grid-cols-3 gap-2">
+
+                        {/* Quick time selection buttons */}
                         <Button onPress={() => setTime("24")} className="shadow-sm" color="primary" radius="sm">Past Day</Button>
                         <Button onPress={() => setTime("168")} className="shadow-sm" color="primary" radius="sm">Past Week</Button>
                         <Button onPress={() => setTime("744")} className="shadow-sm" color="primary" radius="sm">Past Month</Button>
+
+                        {/* Date picker */}
                         <div className="col-span-3">
                             <DateRangePicker className="flex items-center justify-center h-full" label="Custom" />
                         </div>
                         <div className="col-span-2">
+
+                            {/* Time intervals */}
                             <Dropdown className=" w-full">
                                 <DropdownTrigger>
                                     <Button className="shadow-sm w-full" radius="sm" variant="bordered" >
@@ -547,6 +581,8 @@ const Chart = () => {
                             </Dropdown>
                         </div>
                         <div>
+
+                            {/* Unit selection */}
                             <Dropdown className=" w-full">
                                 <DropdownTrigger>
                                     <Button className="shadow-sm w-full" radius="sm" variant="bordered">
@@ -562,6 +598,8 @@ const Chart = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Sensor Selection Section */}
             <div className="p-4 h-full col-span-2 bg-slate-100 shadow-sm rounded-md flex-grow">
                 <h1 className="text-center text-xl font-semibold font-mono">Sensors</h1>
                 <div className=" grid flex-grow gap-2 grid-cols-[0.75fr_0.5fr_2fr_2fr_0.05fr_0.05fr]">
@@ -569,6 +607,8 @@ const Chart = () => {
                     <p className="text-sm text-center">Cluster Location</p>
                     <p className="col-span-2 text-sm text-center">Sensor</p>
                     <div></div>
+
+
                     <h1>Sensor 1: </h1>
                     <div>
                         <Dropdown className=" w-full">
@@ -698,6 +738,7 @@ const Chart = () => {
                         </Modal>
                     </div>
 
+
                     <h1>Sensor 3: </h1>
                     <div>
                         <Dropdown className=" w-full">
@@ -769,6 +810,8 @@ const Chart = () => {
 
 
             </div>
+
+            {/* Chart Type Section*/}
             <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md">
                 <h1 className="text-center text-xl font-semibold font-mono">Chart Type</h1>
                 <div className="p-3">
@@ -784,13 +827,17 @@ const Chart = () => {
                 </div>
             </div>
 
+            {/* Chart Display Area */}
             <div className="row-span-2 col-span-1 p-4 h-full  bg-slate-100 shadow-sm rounded-md lg:col-span-3 md:col-span-2 flex flex-col">
                 <h1 className="text-center text-xl font-semibold font-mono">Chart</h1>
                 <div className="flex-grow w-full h-0" id="plotly-plot">
 
+                    {/* Call the chart creation function */}
                     {createCart()}
                 </div>
             </div>
+
+            {/* Statistics Section */}
             <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md flex flex-col">
                 <h1 className="text-center text-xl font-semibold font-mono">Stats</h1>
 
@@ -818,6 +865,7 @@ const Chart = () => {
                 </div>
                 <div className="flex-grow w-full h-0">
 
+                    {/* Box Plot */}
                     <PlotlyComponent
                         data={[{ y: dataset.values, type: 'box', marker: { color: color }, name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : " " },
                         { y: dataset2.values, type: 'box', marker: { color: color2 }, name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : " " },
@@ -837,13 +885,16 @@ const Chart = () => {
                         style={{ width: "100%", height: "100%" }}
                     />
                 </div>
-
             </div>
+
+            {/* Downloads Section */}
             <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md">
                 <h1 className="text-center text-xl font-semibold font-mono">Downloads</h1>
                 <div className="p-3">
                     <div className="grid grid-cols-5 gap-2">
                         <Button className="col-span-2" color="primary" radius="sm" onPress={download}>Download {downloadType}</Button>
+
+                        {/* Download format selection */}
                         <Dropdown>
                             <DropdownTrigger className="col-span-2">
                                 <Button className="shadow-sm w-full" radius="sm" variant="bordered" >Download Format</Button>
@@ -856,6 +907,7 @@ const Chart = () => {
                             </DropdownMenu>
                         </Dropdown>
 
+                        {/* Help drawer */}
                         <Button onPress={onOpenHelp} radius="sm">Open Help</Button>
                         <Drawer isOpen={isOpenHelp} onClose={onCloseHelp}>
                             <DrawerContent>
@@ -864,8 +916,8 @@ const Chart = () => {
                                         <DrawerHeader className="flex flex-col gap-1 text-center text-xl font-semibold font-mono">Help</DrawerHeader>
                                         <DrawerBody>
                                             <h1 className="font-semibold font-mono">About the Project</h1>
-                                            <p>The TerraTek project encapsulates a property consisting of rainwater harvesting tanks, garden areas, and a playa. 
-                                                There are four tanks in total with three of them holding rainwater and the fourth containing gray water. Each tank contains a cluster of sensors with an additional cluster located at the playa. 
+                                            <p>The TerraTek project encapsulates a property consisting of rainwater harvesting tanks, garden areas, and a playa.
+                                                There are four tanks in total with three of them holding rainwater and the fourth containing gray water. Each tank contains a cluster of sensors with an additional cluster located at the playa.
                                                 The cluster in the playa provides weather data in addition to playa conditions.</p>
                                             <h1 className="font-semibold font-mono">About this Page</h1>
                                             <p>The purpose of this page is to allow users to create custom reports, personalized plots, and to download data in the format of their choice.</p>
@@ -887,4 +939,4 @@ const Chart = () => {
     );
 }
 
-export default Chart;
+export default Reports;
