@@ -6,7 +6,7 @@
 #define SparkFun_Weather_Meter_Wind_Speed_ID 0x06
 #define SparkFun_Weather_Meter_Wind_Direction_ID 0x07
 #define DFR_Weather_Meter_Rainfall_ID 0x08
-#define DFR_Conductivity_Meter_ID 0x09
+#define EC_ID 0x09
 #define DFR_Ultrasonic_Distance_ID 0x0A
 #define PH_ID 0x0B
 #define Soil_Moisture_Sensor_ID 0x0C

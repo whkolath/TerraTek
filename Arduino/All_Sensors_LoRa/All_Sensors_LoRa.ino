@@ -5,7 +5,6 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Wire.h>
-#include <SparkFun_External_EEPROM.h>
 #include <ArduinoLowPower.h>
 
 #include "arduino_secrets.h"
@@ -82,67 +81,23 @@ LoRaModem modem;
 // }
 
 
-// // Function to read data from the pH sensor
-// float readPHSensor() {
-//   int sensorValue = analogRead(PH_SENSOR_PIN);           // Read the analog value
-//   float voltage = sensorValue * (V_REF / ADC_RES_BITS);  // Convert ADC value to voltage
-//   float current = voltage / 100.0 * 1000;                // Calculate current in mA (Ohm's Law)
-//   float pH = (current - 4.0) * (14.0 / 16.0);            // Convert current to pH value
-//   return pH;
-// }
+// Function to read data from the pH sensor
+ float readPHSensor() {
+   int sensorValue = analogRead(PH_SENSOR_PIN);           // Read the analog value
+   float voltage = sensorValue * (V_REF / ADC_RES_BITS);  // Convert ADC value to voltage
+   float current = voltage / 100.0 * 1000;                // Calculate current in mA (Ohm's Law)
+   float pH = (current - 4.0) * (14.0 / 16.0);            // Convert current to pH value
+   return pH;
+ }
 
-// // Function to read data from the EC sensor
-// float readECSensor() {
-//   int analogValue = analogRead(EC_SENSOR_PIN);           // Read the analog voltage
-//   float voltage = analogValue * (V_REF / ADC_RES_BITS);  // Convert to voltage
-//   float ec = voltage * ecKConstant;                      // Convert voltage to EC using calibration constant
-//   return ec;
-// }
-
-// // Function to correct EC value for temperature
-// float correctEC(float ec, float temperature) {
-//   return ec / (1 + TEMP_COEFFICIENT * (temperature - 25.0));
-// }
-
-// // Function to load EC calibration data from EEPROM
-// void loadECCalibration() {
-//   ecKConstant = readFloatFromEEPROM(0);  // Read EC calibration constant from EEPROM
-//   Serial.print("Loaded EC Calibration Constant: ");
-//   Serial.println(ecKConstant);
-// }
-
-// // Function to save EC calibration data to EEPROM
-// void saveECCalibration(float newKConstant) {
-//   ecKConstant = newKConstant;          // Update the calibration constant
-//   writeFloatToEEPROM(0, ecKConstant);  // Save to EEPROM at address 0
-//   Serial.print("Saved EC Calibration Constant to EEPROM: ");
-//   Serial.println(ecKConstant);
-// }
-
-// // Example function to perform EC calibration (call during calibration)
-// void performECCalibration(float measuredVoltage, float knownEC) {
-//   // Calculate the new calibration constant
-//   float newKConstant = knownEC / measuredVoltage;
-//   saveECCalibration(newKConstant);  // Save the new constant to EEPROM
-// }
-
-// // Helper function to write a float to EEPROM
-// void writeFloatToEEPROM(uint16_t address, float value) {
-//   byte* data = (byte*)&value;
-//   for (int i = 0; i < sizeof(float); i++) {
-//     eeprom.write(address + i, data[i]);
-//   }
-// }
-
-// // Helper function to read a float from EEPROM
-// float readFloatFromEEPROM(uint16_t address) {
-//   float value = 0.0;
-//   byte* data = (byte*)&value;
-//   for (int i = 0; i < sizeof(float); i++) {
-//     data[i] = eeprom.read(address + i);
-//   }
-//   return value;
-// }
+ // Function to read data from the EC sensor
+ float readECSensor() {
+   int sensorValue = analogRead(EC_SENSOR_PIN);           // Read the analog value
+   float voltage = sensorValue * (V_REF / ADC_RES_BITS);  // Convert ADC value to voltage
+   float current = voltage / 100.0 * 1000;                // Calculate current in mA (Ohm's Law)
+   float EC = (current - 4.0) * (14.0 / 16.0);            // Convert current to EC value
+   return EC;
+ }
 
 // Function to send data over LoRaWAN
 bool LoRaWAN_send(char SID, char error, double reading) {
@@ -242,14 +197,6 @@ void setup() {
 
   // Wire.begin();
 
-  // Initialize EEPROM
-  // Serial.println("Initializing EEPROM...");
-  // if (eeprom.begin() != 0) {
-  //   Serial.println("EEPROM initialization failed!");
-  // } else {
-  //   Serial.println("EEPROM initialized successfully.");
-  // }
-
   // Initialize LoRaWAN
   if (!modem.begin(US915)) {
     Serial.println("Failed to start module");
@@ -302,18 +249,12 @@ void loop() {
 
   // LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, tempC);
 
-  // // // Read EC sensor data and apply temperature correction
-  // // double ec = readECSensor();
-  // // double ecCorrected = correctEC(ec, tempC);irectionError);
+   //Read EC sensor data and apply temperature correction
+   double ec = readECSensor();
 
-  // // Serial.print("EC Value: "); Serial.println(ec);
-  // // Serial.print("Corrected EC Value: "); Serial.println(ecCorrected);
-
-  // // //LoRaWAN_send(DFR_Conductivity_Meter_ID, 0x00, ecCorrected)
-
-  // // // Read pH sensor data
-  // // double pH_val = readPHSensor();
-  // // Serial.print("pH Value: "); Serial.println(pH);
+   // Read pH sensor data
+   double pH = readPHSensor();
+  
 
   // // //LoRaWAN_send(PH_ID, 0x00, pH_val)
 
@@ -377,6 +318,18 @@ void loop() {
   Serial.println(" kPa");
 
   LoRaWAN_send(MKR_Environmental_Shield_Barometric_Pressure_ID, 0x00, ENV.readPressure());
+
+  Serial.print("Illuminance = ");
+  Serial.print(ENV.readIlluminance());
+  Serial.println(" lx");
+
+  LoRaWAN_send(MKR_Environmental_Shield_Illuminance_ID, 0x00, ENV.readIlluminance());
+
+  Serial.print("Illuminance = ");
+  Serial.print(ENV.readIlluminance());
+  Serial.println(" lx");
+
+  LoRaWAN_send(MKR_Environmental_Shield_Illuminance_ID, 0x00, ENV.readIlluminance());
 
   Serial.print("Illuminance = ");
   Serial.print(ENV.readIlluminance());
