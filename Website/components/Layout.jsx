@@ -11,6 +11,7 @@ import {
 } from "@heroui/react";
 
 
+
 const Layout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
@@ -86,3 +87,39 @@ const Layout = ({ children }) => {
 }
 
 export default Layout;
+
+
+
+
+{/* <div className="h-4 w-4 bg-slate-100 text-black flex items-left"> */}
+    {/* Sidebar */}
+    {/* <Dropdown className="w-full">
+        <DropdownTrigger>
+            <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                Pages
+            </Button>
+        </DropdownTrigger>
+        <DropdownMenu>
+            <DropdownItem key="tanks">
+                <Dropdown className="w-full">
+                    <DropdownTrigger>
+                        <Button className="w-full items-left" variant="light" size="sm">
+                            Tanks
+                        </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu>
+                        <DropdownItem key="fresh-water">
+                            <Link href="/tank1">Fresh Water</Link>
+                        </DropdownItem>
+                        <DropdownItem key="grey-water">
+                            <Link href="/tank2">Grey Water</Link>
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </DropdownItem>
+            <DropdownItem key="condition"><Link href="/weather">Condition</Link></DropdownItem>
+            <DropdownItem key="reports"><Link href="/reports">Reports</Link></DropdownItem>
+            <DropdownItem key="comments">Comments</DropdownItem>
+        </DropdownMenu>
+    </Dropdown>
+</div> */}

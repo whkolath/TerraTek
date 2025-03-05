@@ -18,7 +18,7 @@ export default async function handler(
     res: NextApiResponse
 ): Promise<void> {
     try {
-        const Board_ID = req.query.specify;
+        const Board_ID = req.query.board;
         const [results] = await db.execute<mysql.RowDataPacket[]>(
             `SELECT 
                 r.Board_ID
