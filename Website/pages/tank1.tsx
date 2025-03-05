@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { JSXElementConstructor, ReactElement, ReactNode, ReactPortal, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 // 1) Dynamically import Plotly for gauge charts
 const PlotlyComponent = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -106,7 +106,7 @@ const Tank1: NextPage = () => {
         textSize={1}
         textOffsetX={0}
         textOffsetY={0}
-        textRenderer={(props: { height: number; width: number; textSize: number; value: number; percent: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => {
+        textRenderer={(props: { height: number; width: number; textSize: number; value: number; percent: ReactNode; }) => {
           const radius = Math.min(props.height / 2, props.width / 2);
           const textPixels = (props.textSize * radius) / 2;
           const valueStyle = {
