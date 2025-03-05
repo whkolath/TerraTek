@@ -42,33 +42,33 @@ LoRaModem modem;
 // DallasTemperature sensors(&oneWire);
 
 // // Below are the pin definitions for each sensor of the weather meter kit
-// const int windDirectionPin = A1;
-// const int windSpeedPin = 1;
-// const int rainfallPin = 5;
+const int windDirectionPin = A1;
+const int windSpeedPin = 1;
+const int rainfallPin = 5;
 // const int echo = 3;
 // const int trig = 2;
 
 // // Create an instance of the weather meter kit
-// SFEWeatherMeterKit weatherMeterKit(windDirectionPin, windSpeedPin, rainfallPin);
+SFEWeatherMeterKit weatherMeterKit(windDirectionPin, windSpeedPin, rainfallPin);
 
 // // Rainfall sensor via I2C
-// DFRobot_RainfallSensor_I2C Sensor(&Wire);
+DFRobot_RainfallSensor_I2C Sensor(&Wire);
 
 // // Error codes
-// const char NO_ERROR = 0x00;
-// const char ERROR_SENSOR_DISCONNECTED = 0x01;
+const char NO_ERROR = 0x00;
+const char ERROR_SENSOR_DISCONNECTED = 0x01;
 
 // // Variables to store error states
-// char windSpeedError = NO_ERROR;
-// char windDirectionError = NO_ERROR;
-// char rainfallError = NO_ERROR;
+char windSpeedError = NO_ERROR;
+char windDirectionError = NO_ERROR;
+char rainfallError = NO_ERROR;
 
 // double duration = 0;
 // double distance = 0;
 
 // // Variables to store rainfall data
-// double lastRainfall = 0.0;
-// unsigned long lastTime = 0;
+double lastRainfall = 0.0;
+unsigned long lastTime = 0;
 
 // // Function to convert kph to mph
 // double convertKphToMph(double kph) {
@@ -155,24 +155,24 @@ void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT);
   // Initialize the rainfall sensor
-  // while (!Sensor.begin())
-  // {
-  //   Serial.println("Rainfall Sensor init err!!!");
-  //   rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
-  //   delay(1000);
-  // }
+  while (!Sensor.begin())
+  {
+    Serial.println("Rainfall Sensor init err!!!");
+    rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
+    delay(1000);
+  }
 
   // // Initialize the weather meter kit
-  // #ifdef SFE_WMK_PLAFTORM_UNKNOWN
-  //   weatherMeterKit.setADCResolutionBits(10);
+  #ifdef SFE_WMK_PLAFTORM_UNKNOWN
+    weatherMeterKit.setADCResolutionBits(10);
 
-  //   //Serial.println(F("Unknown Signal"));
-  //   Serial.println();
-  // #endif
+    //Serial.println(F("Unknown Signal"));
+    Serial.println();
+  #endif
 
   //   // Begin weather meter kit
-  //   weatherMeterKit.begin();
-  //   lastTime = millis();  // Initialize last time
+    weatherMeterKit.begin();
+    lastTime = millis();  // Initialize last time
 
 
   //   // Initialize temperature sensors
@@ -190,7 +190,7 @@ void setup() {
   }
 
   // Set ADC resolution to 12 bits
-  //analogReadResolution(12);
+  // analogReadResolution(12);
 
   // Initialize DS18B20 temperature sensor
   // ds18b20.begin();
@@ -259,46 +259,44 @@ void loop() {
   // // //LoRaWAN_send(PH_ID, 0x00, pH_val)
 
   // // --- Wind Speed ---
-  // double windSpeedKph = weatherMeterKit.getWindSpeed();
-  // if (windSpeedKph < 0) {
-  //   windSpeedError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
-  //   Serial.println("Error: Wind speed sensor disconnected!");
-  // } else {
-  //   windSpeedError = NO_ERROR;  // No error
-  //   Serial.print("Wind Speed (kph): ");
-  //   Serial.println(windSpeedKph);
-  //   Serial.print("Wind Speed (mph): ");
-  //   Serial.println(convertKphToMph(windSpeedKph));
-  // }
+  double windSpeedKph = weatherMeterKit.getWindSpeed();
+  if (windSpeedKph < 0) {
+    windSpeedError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
+    Serial.println("Error: Wind speed sensor disconnected!");
+  } else {
+    windSpeedError = NO_ERROR;  // No error
+    Serial.print("Wind Speed (kph): ");
+    Serial.println(windSpeedKph);
+  }
 
-  // LoRaWAN_send(SparkFun_Weather_Meter_Wind_Speed_ID, windSpeedError, windSpeedKph);
+  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Speed_ID, windSpeedError, windSpeedKph);
 
   // // --- Wind Direction ---
-  // double windDirection = weatherMeterKit.getWindDirection();
-  // if (windDirection < 0) {
-  //   windDirectionError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
-  //   Serial.println("Error: Wind direction sensor disconnected!");
-  // } else {
-  //   windDirectionError = NO_ERROR;  // No error
-  //   Serial.print("Wind Direction (degrees): ");
-  //   Serial.println(windDirection);
-  // }
+  double windDirection = weatherMeterKit.getWindDirection();
+  if (windDirection < 0) {
+    windDirectionError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
+    Serial.println("Error: Wind direction sensor disconnected!");
+  } else {
+    windDirectionError = NO_ERROR;  // No error
+    Serial.print("Wind Direction (degrees): ");
+    Serial.println(windDirection);
+  }
 
-  // LoRaWAN_send(SparkFun_Weather_Meter_Wind_Direction_ID, windDirectionError, windDirection);
+  LoRaWAN_send(SparkFun_Weather_Meter_Wind_Direction_ID, windDirectionError, windDirection);
 
   // // --- Rainfall ---
-  // double rainfall = Sensor.getRainfall(1);
-  // if (rainfall == -1) {
-  //   rainfallError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
-  //   Serial.println("Error: Rainfall sensor disconnected!");
-  // } else {
-  //   rainfallError = NO_ERROR;  // No error
-  //   Serial.print("Rainfall (mm): ");
-  //   Serial.println(rainfall);
-  // }
+  double rainfall = Sensor.getRainfall(1);
+  if (rainfall == -1) {
+    rainfallError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
+    Serial.println("Error: Rainfall sensor disconnected!");
+  } else {
+    rainfallError = NO_ERROR;  // No error
+    Serial.print("Rainfall (mm): ");
+    Serial.println(rainfall);
+  }
 
 
-  // LoRaWAN_send(DFR_Weather_Meter_Rainfall_ID, rainfallError, tempC);
+  LoRaWAN_send(DFR_Weather_Meter_Rainfall_ID, rainfallError, rainfall);
 
   //--- ENV Shield ---
   Serial.print("Temperature = ");
@@ -359,7 +357,7 @@ void loop() {
   // LoRaWAN_send(DFR_Ultrasonic_Distance, error, distance);
   
   unsigned long end = millis();
-  LowPower.sleep(60000 - (end - start)); //sleep for 1 minutes regardless of the time taken in the loop
+  // LowPower.sleep(60000 - (end - start)); //sleep for 1 minutes regardless of the time taken in the loop
 }
 
 void dummy() {
