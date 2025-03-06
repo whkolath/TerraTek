@@ -12,22 +12,27 @@ const db: mysql.Pool = mysql.createPool({
     connectTimeout: 10000, // 10 seconds
 });
 
-
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ): Promise<void> {
     try {
-        const Board_ID = req.query.board;
+        const { Board_ID } = req.query;
+        console.log('Board_ID:', Board_ID);
+
+
+        // Convert boardfetch to a string
+        const boardid = String(Board_ID);
+
         const [results] = await db.execute<mysql.RowDataPacket[]>(
             `SELECT 
                 r.Board_ID
             FROM
                 Boards r
             WHERE 
-                Board_ID
-            REGEXP
-                ?;`, [Board_ID]);
+                r.Board_ID REGEXP ?;`, [boardid]);
+
+        console.log('Query Results:', results);
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);
