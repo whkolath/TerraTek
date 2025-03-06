@@ -90,7 +90,7 @@ const Dashboard = () => {
 );
 
     return (
-        <div className="w-full h-screen flex">
+        <div className="w-full h-full flex">
             {/* Main Content */}
             <div className="flex-grow p-6 grid grid-cols-2 gap-3">
                 {/* Fresh Water Section */}
