@@ -116,12 +116,11 @@ bool LoRaWAN_send(char SID, char error, double reading) {
       ;
     if (err > 0) {
       Serial.println("Message sent correctly!");
-      for(int i = 0; i < 3; i++)
-      {
-        digitalWrite(LED_BUILTIN, HIGH);  
-        delay(100);                      
+      for (int i = 0; i < 3; i++) {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(100);
         digitalWrite(LED_BUILTIN, LOW);
-        delay(100);  
+        delay(100);
       }
       break;
     } else {
@@ -156,28 +155,27 @@ void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT);
   // Initialize the rainfall sensor
-  while (!Sensor.begin())
-  {
+  while (!Sensor.begin()) {
     Serial.println("Rainfall Sensor init err!!!");
-    rainfallError = ERROR_SENSOR_DISCONNECTED; // Set error code for rainfall sensor
+    rainfallError = ERROR_SENSOR_DISCONNECTED;  // Set error code for rainfall sensor
     delay(1000);
   }
 
-  // // Initialize the weather meter kit
-  #ifdef SFE_WMK_PLAFTORM_UNKNOWN
-    weatherMeterKit.setADCResolutionBits(10);
+// // Initialize the weather meter kit
+#ifdef SFE_WMK_PLAFTORM_UNKNOWN
+  weatherMeterKit.setADCResolutionBits(10);
 
-    //Serial.println(F("Unknown Signal"));
-    Serial.println();
-  #endif
+  //Serial.println(F("Unknown Signal"));
+  Serial.println();
+#endif
 
   //   // Begin weather meter kit
-    weatherMeterKit.begin();
-    lastTime = millis();  // Initialize last time
+  weatherMeterKit.begin();
+  lastTime = millis();  // Initialize last time
 
 
   //   // Initialize temperature sensors
-    sensors.begin();
+  sensors.begin();
 
   //   // Set up the pins
   //   pinMode(echo, INPUT);
@@ -249,17 +247,17 @@ void loop() {
   }
 
   Serial.print("Temperature: ");
-    Serial.println(tempC);
-  
+  Serial.println(tempC);
+
 
   LoRaWAN_send(DS18B2_Temperature_Probe_ID, error, tempC);
 
-   //Read EC sensor data and apply temperature correction
+  //Read EC sensor data and apply temperature correction
   //  double ec = readECSensor();
 
-   // Read pH sensor data
+  // Read pH sensor data
   //  double pH = readPHSensor();
-  
+
 
   // // //LoRaWAN_send(PH_ID, 0x00, pH_val)
 
@@ -292,24 +290,34 @@ void loop() {
   // // --- Rainfall ---
   double totalRainfall = Sensor.getRainfall();
 
-  if (totalRainfall == -1) {
-    rainfallError = ERROR_SENSOR_DISCONNECTED;  // Error if sensor is disconnected
-    Serial.println("Error: Rainfall sensor disconnected!");
-  } else {
-    rainfallError = NO_ERROR;  // No error
+  unsigned long startTime = millis();
+  bool sensorReadSuccess = false;
+
+  while (millis() - startTime < 2000) {  // 2-second timeout
+    totalRainfall = Sensor.getRainfall();
+    if (totalRainfall != -1) {  // Assuming -1 indicates a failed read
+      sensorReadSuccess = true;
+      break;
+    }
+  }
+
+  if (sensorReadSuccess) {
+    rainfallError = 0x00;
     Serial.print("Rainfall (mm): ");
     Serial.println(totalRainfall);
+  } else {
+    rainfallError = 0x01;
+    Serial.println("Error: Rainfall sensor timeout or disconnected!");
   }
 
 
-  if (!LoRaWAN_send(DFR_Weather_Meter_Rainfall_ID, rainfallError, (totalRainfall - rainfall)))
-  {
-      rainfall = totalRainfall;
+  if (!LoRaWAN_send(DFR_Weather_Meter_Rainfall_ID, rainfallError, (totalRainfall - rainfall))) {
+    rainfall = totalRainfall;
   }
   // Serial.println("sent:");
   // Serial.println(totalRainfall - rainfall);
   // rainfall = totalRainfall;
-  
+
 
   //--- ENV Shield ---
   Serial.print("Temperature = ");
@@ -368,8 +376,7 @@ void loop() {
   // }
 
   // LoRaWAN_send(DFR_Ultrasonic_Distance, error, distance);
-  
+
   // unsigned long end = millis();
   // LowPower.sleep(60000 - (end - start)); //sleep for 1 minutes regardless of the time taken in the loop
 }
-
