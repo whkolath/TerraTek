@@ -1,0 +1,12 @@
+#define DS18B2_Temperature_Probe_ID 0x01
+#define MKR_Environmental_Shield_Temperature_ID 0x02
+#define MKR_Environmental_Shield_Humidity_ID 0x03
+#define MKR_Environmental_Shield_Barometric_Pressure_ID 0x04
+#define MKR_Environmental_Shield_Illuminance_ID 0x05
+#define SparkFun_Weather_Meter_Wind_Speed_ID 0x06
+#define SparkFun_Weather_Meter_Wind_Direction_ID 0x07
+#define DFR_Weather_Meter_Rainfall_ID 0x08
+#define EC_ID 0x09
+#define DFR_Ultrasonic_Distance_ID 0x0A
+#define PH_ID 0x0B
+#define Soil_Moisture_Sensor_ID 0x0C
