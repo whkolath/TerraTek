@@ -40,10 +40,9 @@ JOIN
     Sensors S ON R.Sensor_ID = S.Sensor_ID
 WHERE 
     R.Board_ID REGEXP ?
-    AND R.Sensor_ID = 6
-    AND R.Sensor_Timestamp BETWEEN '2025-03-01 00:00:00' AND '2025-03-08 23:59:59'
+    AND R.Sensor_Timestamp >= DATE_SUB(NOW(), INTERVAL 5 HOUR)
 ORDER BY 
-    R.Sensor_Timestamp DESC;`, [boardID]);
+    R.Sensor_Timestamp DESC;;`, [boardID]);
 
         console.log('Query Results:', results);
         res.status(200).json(results);

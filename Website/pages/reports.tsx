@@ -19,10 +19,11 @@ import {
     Button,
     useDisclosure,
 } from "@heroui/react";
-
 import { useEffect, useState } from 'react';
 import { collect } from "collect.js";
+import { parseZonedDateTime } from "@internationalized/date";
 import { CirclePicker } from 'react-color';
+import { DateTime } from 'luxon';
 
 
 const Reports = () => {
@@ -44,6 +45,11 @@ const Reports = () => {
     type BoardList = {
         Board_ID: Array<string>;
         Board_Description: Array<string>;
+    }
+
+    type DateRange = {
+        start: Date;
+        end: Date;
     }
 
     const [unitType, setUnitType] = useState(1);
@@ -80,18 +86,26 @@ const Reports = () => {
     // Download type state
     const [downloadType, setDownload] = useState("PNG");
 
+    const [interval, setInterval] = useState("hourly");
+
     // Selected time span
-    const [time, setTime] = useState("744");
+    const [time, setTime] = useState<DateRange>({
+        start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+        end: new Date()
+    });
 
     // Sensor and board selection states
-    const [sensor, setSensor] = useState("2");
+    const [sensor, setSensor] = useState("1");
     const [board, setBoard] = useState("0xa8610a34362d800f");
+    const [aggregation, setAggregation] = useState("AVG");
 
     const [sensor2, setSensor2] = useState<string | null>(null);
     const [board2, setBoard2] = useState<string | null>(null);
+    const [aggregation2, setAggregation2] = useState("AVG");
 
     const [sensor3, setSensor3] = useState<string | null>(null);
     const [board3, setBoard3] = useState<string | null>(null);
+    const [aggregation3, setAggregation3] = useState("AVG");
 
 
     // Chart type
@@ -123,12 +137,11 @@ const Reports = () => {
 
                 // Fetch the data from the API
                 const [response, response2, response3, sensorResponse, boardResponse] = await Promise.all([
-                    fetch(`/api/hourly/${time}/${sensor}`),
-                    fetch(`/api/hourly/${time}/${sensor2}`),
-                    fetch(`/api/hourly/${time}/${sensor3}`),
+                    fetch(`/api/fetchdata/sensor-data?board=${board}&sensor=${sensor}&calc=${aggregation}&start=${time.start}&end=${time.end}&timeinterval=${interval}`), 
+                    board2 && sensor2 ? fetch(`/api/fetchdata/sensor-data?board=${board2}&sensor=${sensor2}&calc=${aggregation2}&start=${time.start}&end=${time.end}&timeinterval=${interval}`) : Promise.resolve({ json: () => [] }),
+                    board3 && sensor3 ? fetch(`/api/fetchdata/sensor-data?board=${board3}&sensor=${sensor3}&calc=${aggregation3}&start=${time.start}&end=${time.end}&timeinterval=${interval}`) : Promise.resolve({ json: () => [] }),
                     fetch(`/api/sensors`),
                     fetch(`/api/boards`)
-
                 ]);
 
                 // Parse the JSON
@@ -150,52 +163,52 @@ const Reports = () => {
                     Board_Description: boardsData.map((boardsData: { Board_Description: number }) => boardsData.Board_Description),
                 });
 
-                const hours = data.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleTimeString("en-US", {
+                const hours = data.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "numeric",
                     timeZone: "America/Chicago"
                 }));
 
-                let values = data.map((data: { Average_Reading: number }) => data.Average_Reading);
+                let values = data.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
 
                 if (unitType) {
                     if (sensor == "2") {
-                        values = data.map((data: { Average_Reading: number }) => data.Average_Reading ? data.Average_Reading * 9 / 5 + 32 : null);
+                        values = data.map((data: { Calculated_Reading: number }) => data.Calculated_Reading ? data.Calculated_Reading * 9 / 5 + 32 : null);
                     }
                 }
 
-                const days = data.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleDateString("en-US", {
+                const days = data.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
                     timeZone: "America/Chicago"
                 }));
 
-                const dates = data.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp));
+                const dates = data.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp));
 
-                const hours2 = data2.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleTimeString("en-US", {
+                const hours2 = data2.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "numeric",
                     timeZone: "America/Chicago"
                 }));
-                const values2 = data2.map((data: { Average_Reading: number }) => data.Average_Reading);
-                const days2 = data2.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleDateString("en-US", {
+                const values2 = data2.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
+                const days2 = data2.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
                     timeZone: "America/Chicago"
                 }));
 
-                const dates2 = data2.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp));
+                const dates2 = data2.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp));
 
-                const hours3 = data3.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleTimeString("en-US", {
+                const hours3 = data3.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "numeric",
                     timeZone: "America/Chicago"
                 }));
-                const values3 = data3.map((data: { Average_Reading: number }) => data.Average_Reading);
-                const days3 = data3.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleDateString("en-US", {
+                const values3 = data3.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
+                const days3 = data3.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
                     timeZone: "America/Chicago"
                 }));
 
-                const dates3 = data3.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp));
+                const dates3 = data3.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp));
 
 
 
@@ -228,7 +241,7 @@ const Reports = () => {
         };
 
         fetchData();
-    }, [time, sensor, board, sensor2, board2, sensor3, board3, unitType]); // These are the dependant variables
+    }, [time, sensor, board, sensor2, board2, sensor3, board3, unitType, interval, aggregation, aggregation2, aggregation3]); // These are the dependant variables
 
 
     // This function handles download functionality
@@ -332,16 +345,16 @@ const Reports = () => {
             case 1:
                 return (
                     <PlotlyComponent
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', marker: { color: color }, name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false, },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', marker: { color: color2 }, name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', marker: { color: color3 }, name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', marker: { color: color }, name: sensor && board ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false, },
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', marker: { color: color2 }, name: sensor2 && board2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', marker: { color: color3 }, name: sensor3 && board3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 20, r: 20, b: 20 },
                             xaxis: { automargin: true },
-                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor ? sensorList.Units[Number(sensor) - 1] : "" } },
-                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
+                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
+                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
@@ -365,16 +378,16 @@ const Reports = () => {
             case 2:
                 return (
                     <PlotlyComponent
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'markers', marker: { color: color }, name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'markers', marker: { color: color2 }, name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'markers', marker: { color: color3 }, name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'markers', marker: { color: color }, name: sensor && board ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'markers', marker: { color: color2 }, name: sensor2 && board2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'markers', marker: { color: color3 }, name: sensor3 && board3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
                             xaxis: { automargin: true },
-                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor ? sensorList.Units[Number(sensor) - 1] : "" } },
-                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
+                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
+                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
@@ -398,16 +411,16 @@ const Reports = () => {
             case 3:
                 return (
                     <PlotlyComponent
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'bar', marker: { color: color }, name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.dates, y: dataset2.values, type: 'bar', marker: { color: color2 }, name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'bar', marker: { color: color3 }, name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'bar', marker: { color: color }, name: sensor && board ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.dates, y: dataset2.values, type: 'bar', marker: { color: color2 }, name: sensor2 && board2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
+                        { x: dataset3.dates, y: dataset3.values, type: 'bar', marker: { color: color3 }, name: sensor3 && board3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
                             xaxis: { automargin: true },
-                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor ? sensorList.Units[Number(sensor) - 1] : "" } },
-                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
+                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
+                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
@@ -431,7 +444,7 @@ const Reports = () => {
             case 4:
                 return (
                     <PlotlyComponent
-                        data={[{ x: dataset.days, y: dataset.hours, z: dataset.values, type: 'heatmap', name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "" }]}
+                        data={[{ x: [...dataset.days].reverse(), y: dataset.hours, z: dataset.values, type: 'heatmap', name: sensor && board ? sensorList.Sensor_Description[Number(sensor) - 1] : "" }]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
@@ -452,9 +465,9 @@ const Reports = () => {
             case 5:
                 return (
                     <PlotlyComponent
-                        data={[{ x: dataset.values, type: 'histogram', marker: { color: color }, name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
-                        { x: dataset2.values, type: 'histogram', marker: { color: color2 }, name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
-                        { x: dataset3.values, type: 'histogram', marker: { color: color3 }, name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
+                        data={[{ x: dataset.values, type: 'histogram', marker: { color: color }, name: sensor && board ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false },
+                        { x: dataset2.values, type: 'histogram', marker: { color: color2 }, name: sensor2 && board2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false },
+                        { x: dataset3.values, type: 'histogram', marker: { color: color3 }, name: sensor3 && board3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false }
                         ]}
                         layout={{
                             autosize: true,
@@ -483,9 +496,9 @@ const Reports = () => {
             case 6:
                 return (
                     <PlotlyComponent
-                        data={[{ x: sensor ? dataset.values : [], type: 'violin', marker: { color: color }, name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", box: { visible: true }, meanline: { visible: true } },
-                        { x: sensor2 ? dataset2.values : [], type: 'violin', marker: { color: color2 }, name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", box: { visible: true }, meanline: { visible: true } },
-                        { x: sensor3 ? dataset3.values : [], type: 'violin', marker: { color: color3 }, name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", box: { visible: true }, meanline: { visible: true } }
+                        data={[{ x: sensor ? dataset.values : [], type: 'violin', marker: { color: color }, name: sensor && board ? sensorList.Sensor_Description[Number(sensor) - 1] : "", box: { visible: true }, meanline: { visible: true } },
+                        { x: sensor2 ? dataset2.values : [], type: 'violin', marker: { color: color2 }, name: sensor2 && board2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", box: { visible: true }, meanline: { visible: true } },
+                        { x: sensor3 ? dataset3.values : [], type: 'violin', marker: { color: color3 }, name: sensor3 && board3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", box: { visible: true }, meanline: { visible: true } }
                         ]}
                         layout={{
                             autosize: true,
@@ -514,16 +527,16 @@ const Reports = () => {
             default:
                 return (
                     <PlotlyComponent
-                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', marker: { color: color }, name: sensor ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false, },
-                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', marker: { color: color2 }, name: sensor2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
-                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', marker: { color: color3 }, name: sensor3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
+                        data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', marker: { color: color }, name: sensor && board ? sensorList.Sensor_Description[Number(sensor) - 1] : "", showlegend: sensor ? true : false, },
+                        { x: dataset2.dates, y: dataset2.values, type: 'scatter', mode: 'lines+markers', marker: { color: color2 }, name: sensor2 && board2 ? sensorList.Sensor_Description[Number(sensor2) - 1] : "", showlegend: sensor2 ? true : false, yaxis: 'y2' },
+                        { x: dataset3.dates, y: dataset3.values, type: 'scatter', mode: 'lines+markers', marker: { color: color3 }, name: sensor3 && board3 ? sensorList.Sensor_Description[Number(sensor3) - 1] : "", showlegend: sensor3 ? true : false, yaxis: 'y3' }
                         ]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 20, r: 20, b: 20 },
                             xaxis: { automargin: true },
-                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor ? sensorList.Units[Number(sensor) - 1] : "" } },
-                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
+                            yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
+                            yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board3? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
@@ -555,13 +568,36 @@ const Reports = () => {
                     <div className="grid grid-cols-3 gap-2">
 
                         {/* Quick time selection buttons */}
-                        <Button onPress={() => setTime("24")} className="shadow-sm" color="primary" radius="sm">Past Day</Button>
-                        <Button onPress={() => setTime("168")} className="shadow-sm" color="primary" radius="sm">Past Week</Button>
-                        <Button onPress={() => setTime("744")} className="shadow-sm" color="primary" radius="sm">Past Month</Button>
+                        <Button onPress={() => setTime({
+                            start: new Date(new Date().setDate(new Date().getDate() - 1)),
+                            end: new Date()
+                        })} className="shadow-sm" color="primary" radius="sm">Past Day</Button>
+                        <Button onPress={() => setTime({
+                            start: new Date(new Date().setDate(new Date().getDay() - 7)),
+                            end: new Date()
+                        })} className="shadow-sm" color="primary" radius="sm">Past Week</Button>
+                        <Button onPress={() => setTime({
+                            start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+                            end: new Date()
+                        })} className="shadow-sm" color="primary" radius="sm">Past Month</Button>
 
                         {/* Date picker */}
                         <div className="col-span-3">
-                            <DateRangePicker className="flex items-center justify-center h-full" label="Custom" />
+                            <DateRangePicker 
+                                className="flex items-center justify-center h-full"
+                                defaultValue={{
+                                    start: parseZonedDateTime(DateTime.fromJSDate(time.start).setZone('America/Chicago').toString()),
+                                    end: parseZonedDateTime(DateTime.fromJSDate(time.end).setZone('America/Chicago').toString()),
+                                }}
+                                onChange={(range) => {
+                                    if (range !== null) {
+                                        setTime({
+                                            start: range.start.toDate(),
+                                            end: range.end.toDate(),
+                                        });
+                                    }
+                                }}
+                            />
                         </div>
                         <div className="col-span-2">
 
@@ -572,11 +608,11 @@ const Reports = () => {
                                         Time Intervals
                                     </Button>
                                 </DropdownTrigger>
-                                <DropdownMenu>
-                                    <DropdownItem key={1}>No Aggregation</DropdownItem>
-                                    <DropdownItem key={2}>Half Hourly</DropdownItem>
-                                    <DropdownItem key={3}>Hourly</DropdownItem>
-                                    <DropdownItem key={4}>Daily</DropdownItem>
+                                <DropdownMenu onAction={(key) => setInterval(key.toString())}>
+                                    <DropdownItem key={"none"}>No Aggregation</DropdownItem>
+                                    <DropdownItem key={"halfhour"}>Half Hourly</DropdownItem>
+                                    <DropdownItem key={"hourly"}>Hourly</DropdownItem>
+                                    <DropdownItem key={"daily"}>Daily</DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
@@ -617,11 +653,11 @@ const Reports = () => {
                                     Aggregation type
                                 </Button>
                             </DropdownTrigger>
-                            <DropdownMenu>
-                                <DropdownItem key={1}>Average</DropdownItem>
-                                <DropdownItem key={2}>Median</DropdownItem>
-                                <DropdownItem key={3}>Minimum</DropdownItem>
-                                <DropdownItem key={4}>Maximum</DropdownItem>
+                            <DropdownMenu onAction={(key) => setAggregation(key.toString())}>
+                                <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                <DropdownItem key={"MAX"}>Maximum</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -680,11 +716,11 @@ const Reports = () => {
                                     Aggregation type
                                 </Button>
                             </DropdownTrigger>
-                            <DropdownMenu>
-                                <DropdownItem key={1}>Average</DropdownItem>
-                                <DropdownItem key={2}>Median</DropdownItem>
-                                <DropdownItem key={3}>Minimum</DropdownItem>
-                                <DropdownItem key={4}>Maximum</DropdownItem>
+                            <DropdownMenu onAction={(key) => setAggregation2(key.toString())}>
+                                <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                <DropdownItem key={"MAX"}>Maximum</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -747,11 +783,11 @@ const Reports = () => {
                                     Aggregation type
                                 </Button>
                             </DropdownTrigger>
-                            <DropdownMenu>
-                                <DropdownItem key={1}>Average</DropdownItem>
-                                <DropdownItem key={2}>Median</DropdownItem>
-                                <DropdownItem key={3}>Minimum</DropdownItem>
-                                <DropdownItem key={4}>Maximum</DropdownItem>
+                            <DropdownMenu onAction={(key) => setAggregation3(key.toString())}>
+                                <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                <DropdownItem key={"MAX"}>Maximum</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>

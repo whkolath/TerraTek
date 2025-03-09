@@ -40,7 +40,12 @@ const HealthPage = () => {
         Count: number;
     }>;
 
-   
+    type Online = {
+        online: boolean;
+        last_reading: string;
+    };
+
+
     // // States of the datasets
     const [dataset, setDataset] = useState<DataSet>({
         dates: [],
@@ -50,58 +55,11 @@ const HealthPage = () => {
     });
 
     const [datasetAll, setDatasetAll] = useState<DataSetAll>([]);
+    const [rate1, setRate1] = useState<number>(0);
+    const [rate2, setRate2] = useState<number>(0);
 
-    // const [dataset2, setDataset2] = useState<DataSet>({
-    //     dates: [],
-    //     values: [],
-    //     days: [],
-    //     hours: [],
-    // });
-
-    // const [dataset3, setDataset3] = useState<DataSet>({
-    //     dates: [],
-    //     values: [],
-    //     days: [],
-    //     hours: [],
-    // });
-
-    // // Download type state
-    // const [downloadType, setDownload] = useState("PNG");
-
-    // // Selected time span
-    // const [time, setTime] = useState("744");
-
-    // // Sensor and board selection states
-    // const [sensor, setSensor] = useState("2");
-    // const [board, setBoard] = useState("0xa8610a34362d800f");
-
-    // const [sensor2, setSensor2] = useState<string | null>(null);
-    // const [board2, setBoard2] = useState<string | null>(null);
-
-    // const [sensor3, setSensor3] = useState<string | null>(null);
-    // const [board3, setBoard3] = useState<string | null>(null);
-
-
-    // // Chart type
-    // const [chartType, setChartType] = useState(1);
-
-    // // Default colors
-    // const [color, setColor] = useState('#3f51b5');
-    // const [color2, setColor2] = useState('#f44336');
-    // const [color3, setColor3] = useState('#4caf50');
-
-    // // List of sensors, will be populated from database
-    // const [sensorList, setSensorList] = useState<SensorList>({
-    //     Sensor_ID: [],
-    //     Sensor_Description: [],
-    //     Units: []
-    // })
-
-    // // lists of boards, will be populated from database
-    // const [boardList, setBoardList] = useState<BoardList>({
-    //     Board_ID: [],
-    //     Board_Description: [],
-    // })
+    const [online1, setOnline1] = useState<Online | null>(null)
+    const [online2, setOnline2] = useState<Online | null>(null)
 
 
     // // This is where the website will react to changes the user makes. Ie. a different sensor is selected
@@ -110,15 +68,42 @@ const HealthPage = () => {
             try {
 
                 // Fetch the data from the API
-                const [response, all] = await Promise.all([
-                    fetch(`/api/rate/1000`),
-                    fetch(`/api/rate/all`)
+                const [response, rate1Response, rate2Response, online1Response, online2Response] = await Promise.all([
+                    fetch(`/api/rate/720`),
+                    fetch(`/api/rate/latest/0xa8610a34362d800f`), //Playa Weather Station
+                    fetch(`/api/rate/latest/0xa8610a3436268316`),  //Fresh Water Tank
 
+                    fetch(`/api/rate/online/0xa8610a34362d800f`),  //Playa Weather Station
+                    fetch(`/api/rate/online/0xa8610a3436268316`)  //Fresh Water Tank
                 ]);
 
                 const rate = await response.json();
-                const rateAll = await all.json() as DataSetAll;
- 
+                const rate1Data = await rate1Response.json();
+                setRate1(rate1Data[0].Number_Reading);
+                const rate2Data = await rate2Response.json();
+                setRate2(rate2Data[0].Number_Reading);
+
+                const online1Data = await online1Response.json();
+                setOnline1({
+                    online: online1Data[0].Online ? true : false,
+                    last_reading: new Date(online1Data[0].LastTimestamp).toLocaleString("en-US", {
+                        timeZone: "America/Chicago",
+                        timeStyle: "medium",
+                        dateStyle: "short",
+
+                    })
+                });
+
+                const online2Data = await online2Response.json();
+                setOnline2({
+                    online: online2Data[0].Online ? true : false,
+                    last_reading: new Date(online2Data[0].LastTimestamp).toLocaleString("en-US", {
+                        timeZone: "America/Chicago",
+                        timeStyle: "medium",
+                        dateStyle: "short",
+
+                    })
+                });
 
                 const hours = rate.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleTimeString("en-US", {
                     hour: "numeric",
@@ -145,8 +130,31 @@ const HealthPage = () => {
                     hours: hours,
                 });
 
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, []); // These are the dependant variables
+
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                // Fetch the data from the API
+                const [all] = await Promise.all([
+                    fetch(`/api/rate/all`)
+                ]);
+
+
+                const rateAll = await all.json() as DataSetAll;
+
+
                 setDatasetAll(rateAll);
-               
+
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -172,23 +180,23 @@ const HealthPage = () => {
                         </div>
                     ))}
                 </div>
-                
+
             </div>
 
-            {/* Board 1 */}
+            {/* Playa weather station */}
             <div className="h-full bg-slate-100 col-span-2 shadow-sm rounded-md">
                 <div className="p-3 gap-5">
-                    <h1 className="text-center text-xl font-semibold font-mono">Board 1</h1>
-                    <p>Board 1 Readings per Hour</p>
+                    <h1 className="text-center text-xl font-semibold font-mono">Playa Weather Station</h1>
+                    <p>Playa weather station Readings per Hour</p>
                     <PlotlyComponent
                         data={[
                             {
                                 type: "indicator",
                                 mode: "gauge+number",
-                                value: 710,
+                                value: rate1,
                                 title: { text: "Board 1 transmission rate" },
                                 gauge: {
-                                    axis: { range: [600, 750] },
+                                    axis: { range: [500, 750] },
                                 },
                             },
                         ]}
@@ -202,27 +210,27 @@ const HealthPage = () => {
                         style={{ width: "100%", height: "200px" }}
                     />
                     <div className="text-center text-lg gap-5 p-10">
-                        <p>Board 1: ONLINE</p>
-                        <p>Last Reading: 3:15pm 3/4/25</p>
+                        <p>Playa Weather Station: {online1?.online ? "ONLINE" : "OFFLINE"}</p>
+                        <p>Last Reading: {online1?.last_reading}</p>
                     </div>
                 </div>
 
             </div>
 
-            {/* Board 2 */}
+            {/* Fresh Water Tank */}
             <div className="h-full bg-slate-100 col-span-2 shadow-sm rounded-md">
                 <div className="p-3">
-                    <h1 className="text-center text-xl font-semibold font-mono">Board 2</h1>
-                    <p>Board 2 Readings per Hour</p>
+                    <h1 className="text-center text-xl font-semibold font-mono">Fresh Water Tank</h1>
+                    <p>Fresh Water Tank Readings per Hour</p>
                     <PlotlyComponent
                         data={[
                             {
                                 type: "indicator",
                                 mode: "gauge+number",
-                                value: 0,
-                                title: { text: "Board 2 transmission rate" },
+                                value: rate2,
+                                title: { text: "Fresh Water Tank transmission rate" },
                                 gauge: {
-                                    axis: { range: [600, 750] },
+                                    axis: { range: [500, 750] },
                                 },
                             },
                         ]}
@@ -236,8 +244,8 @@ const HealthPage = () => {
                         style={{ width: "100%", height: "200px" }}
                     />
                     <div className="text-center text-lg gap-5 p-10">
-                        <p>Board 1: OFFLINE</p>
-                        <p>Last Reading: 2:22pm 1/24/25</p>
+                        <p>Fresh Water Tank: {online2?.online ? "ONLINE" : "OFFLINE"}</p>
+                        <p>Fresh Water Tank: {online2?.last_reading}</p>
                     </div>
                 </div>
             </div>

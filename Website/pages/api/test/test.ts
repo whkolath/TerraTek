@@ -12,40 +12,16 @@ const db: mysql.Pool = mysql.createPool({
     connectTimeout: 10000, // 10 seconds
 });
 
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ): Promise<void> {
     try {
-        const { Board_ID } = req.query;
-        console.log('Board_ID:', Board_ID);
-
-        if (!Board_ID) {
-            res.status(400).json({ error: 'Board_ID is required' });
-            return;
-        }
-        
-        const boardID = Board_ID.toString();
-
+        // const sensor_id = req.query.sensor;
         const [results] = await db.execute<mysql.RowDataPacket[]>(
-            `SELECT 
-    S.Sensor_ID, 
-    S.Sensor_Description, 
-    S.Units,
-    R.Sensor_Timestamp,
-    R.Sensor_Value
-FROM 
-    Readings R
-JOIN 
-    Sensors S ON R.Sensor_ID = S.Sensor_ID
-WHERE 
-    R.Board_ID REGEXP ?
-    AND R.Sensor_ID = 6
-    AND R.Sensor_Timestamp BETWEEN '2025-03-01 00:00:00' AND '2025-03-08 23:59:59'
-ORDER BY 
-    R.Sensor_Timestamp DESC;`, [boardID]);
-
-        console.log('Query Results:', results);
+            'SELECT * FROM Sensors WHERE Sensor_TimeStamp BETWEEN 2025-03-01 AND 2025-03-31'
+        );
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);
