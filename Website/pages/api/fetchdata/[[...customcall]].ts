@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Validate calculation method
-        const allowedCalculations = ['AVG', 'MIN', 'MAX', 'MEDIAN'];
+        const allowedCalculations = ['AVG', 'MIN', 'MAX', 'MEDIAN', 'SUM'];
         const calculationMethod = allowedCalculations.includes(calc as string) ? calc as string : 'AVG';
 
         // Validate time interval (default: hourly)

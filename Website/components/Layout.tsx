@@ -107,7 +107,7 @@ const geistSans = Geist({
                 </NavbarMenu>
             </Navbar>
 
-            <main className="h-[calc(100vh-50px)]">
+            <main>
                 {children}
             </main>
         </div>
