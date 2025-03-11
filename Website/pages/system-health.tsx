@@ -166,10 +166,10 @@ const HealthPage = () => {
 
 
     return (
-        <div className="w-full h-full grid gap-2 p-2 grid-rows-2 grid-cols-5">
+        <div className="w-full min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] grid gap-2 p-2 grid-rows-2 lg:grid-cols-5 md:grid-cols-3 grid-cols-1">
 
             {/* Data Rate */}
-            <div className="p-4 h-full row-span-2 bg-slate-100 shadow-sm rounded-md flex-grow">
+            <div className="p-4 lg:h-full md:h-[calc(100vh-50px)] md:row-span-2 bg-slate-100 shadow-sm rounded-md flex-grow md:block hidden">
                 <h1 className="text-center text-xl font-semibold font-mono">Sensor List</h1>
                 <div className="overflow-scroll" style={{ maxHeight: '95%' }}>
                     {datasetAll.map((data, index) => (
@@ -184,10 +184,9 @@ const HealthPage = () => {
             </div>
 
             {/* Playa weather station */}
-            <div className="h-full bg-slate-100 col-span-2 shadow-sm rounded-md">
+            <div className="h-full bg-slate-100 md:col-span-2 shadow-sm rounded-md">
                 <div className="p-3 gap-5">
                     <h1 className="text-center text-xl font-semibold font-mono">Playa Weather Station</h1>
-                    <p>Playa weather station Readings per Hour</p>
                     <PlotlyComponent
                         data={[
                             {
@@ -196,8 +195,16 @@ const HealthPage = () => {
                                 value: rate1,
                                 title: { text: "Board 1 transmission rate" },
                                 gauge: {
-                                    axis: { range: [500, 750] },
+                                    bar: { color: "darkGreen" },
+                                    axis: { range: [570, 670] },
+                                    steps: [
+                                        { range: [570, 600], color: "lightgray" },
+                                        { range: [600, 640], color: "lightGreen" },
+                                        { range: [640, 670], color: "lightgray" }
+                                    ],
+
                                 },
+                                number: { suffix: " Readings per Hour" }
                             },
                         ]}
                         layout={{
@@ -206,32 +213,40 @@ const HealthPage = () => {
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
                         }}
+                        config={{ displayModeBar: false, responsive: true }}
                         useResizeHandler
                         style={{ width: "100%", height: "200px" }}
                     />
                     <div className="text-center text-lg gap-5 p-10">
-                        <p>Playa Weather Station: {online1?.online ? "ONLINE" : "OFFLINE"}</p>
-                        <p>Last Reading: {online1?.last_reading}</p>
+                        <p className={`${online1?.online ? "text-green-900" : "text-red-900"}`}>Playa Weather Station: {online1?.online ? "ONLINE ✅" : "OFFLINE ❌"}</p>
+                        <p className={`${online1?.online ? "text-green-900" : "text-red-900"}`}>Last Reading: {online1?.last_reading}</p>
                     </div>
                 </div>
 
             </div>
 
             {/* Fresh Water Tank */}
-            <div className="h-full bg-slate-100 col-span-2 shadow-sm rounded-md">
+            <div className="h-full bg-slate-100 md:col-span-2 shadow-sm rounded-md">
                 <div className="p-3">
                     <h1 className="text-center text-xl font-semibold font-mono">Fresh Water Tank</h1>
-                    <p>Fresh Water Tank Readings per Hour</p>
                     <PlotlyComponent
                         data={[
                             {
                                 type: "indicator",
                                 mode: "gauge+number",
                                 value: rate2,
-                                title: { text: "Fresh Water Tank transmission rate" },
+                                title: { text: "Board 1 transmission rate" },
                                 gauge: {
-                                    axis: { range: [500, 750] },
+                                    bar: { color: "darkGreen" },
+                                    axis: { range: [570, 670] },
+                                    steps: [
+                                        { range: [570, 600], color: "lightgray" },
+                                        { range: [600, 640], color: "lightGreen" },
+                                        { range: [640, 670], color: "lightgray" }
+                                    ],
+
                                 },
+                                number: { suffix: " Readings per Hour" }
                             },
                         ]}
                         layout={{
@@ -240,20 +255,21 @@ const HealthPage = () => {
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
                         }}
+                        config={{ displayModeBar: false, responsive: true }}
                         useResizeHandler
                         style={{ width: "100%", height: "200px" }}
                     />
                     <div className="text-center text-lg gap-5 p-10">
-                        <p>Fresh Water Tank: {online2?.online ? "ONLINE" : "OFFLINE"}</p>
-                        <p>Fresh Water Tank: {online2?.last_reading}</p>
+                        <p className={`${online2?.online ? "text-green-900" : "text-red-900"}`}>Fresh Water Tank: {online2?.online ? "ONLINE ✅" : "OFFLINE ❌"}</p>
+                        <p className={`${online2?.online ? "text-green-900" : "text-red-900"}`}>Last Reading: {online2?.last_reading}</p>
                     </div>
                 </div>
             </div>
 
             {/* Data Rate */}
-            <div className="p-4 h-full col-span-4 bg-slate-100 shadow-sm rounded-md flex flex-col">
+            <div className="p-4 h-full lg:col-span-4 md:col-span-3 bg-slate-100 shadow-sm rounded-md flex flex-col">
                 <h1 className="text-center text-xl font-semibold font-mono">Transmission Rate</h1>
-                <div className="flex-grow">
+                <div className="flex-grow h-full min-h-[400px]">
                     <PlotlyComponent
                         data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
                         layout={{
@@ -276,7 +292,20 @@ const HealthPage = () => {
                     />
                 </div>
             </div>
+            {/* Data Rate */}
+            <div className="p-4 lg:h-full md:h-[calc(100vh-50px)] md:row-span-2 bg-slate-100 shadow-sm rounded-md flex-grow block md:hidden">
+                <h1 className="text-center text-xl font-semibold font-mono">Sensor List</h1>
+                <div className="md:overflow-scroll" style={{ maxHeight: '95%' }}>
+                    {datasetAll.map((data, index) => (
+                        <div key={index} className="p-2 border-b border-gray-200">
+                            <p>Sensor: {data.Sensor_Description}</p>
+                            <p>Board: {data.Board_Description}</p>
+                            <p>Total Readings Received: {data.Count}</p>
+                        </div>
+                    ))}
+                </div>
 
+            </div>
 
         </div>
     );

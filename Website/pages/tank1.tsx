@@ -26,10 +26,10 @@ const Tank1: NextPage = () => {
     useEffect(() => {
         Promise.all([
             // This section is commented out for local testing
-              fetch("/api/latest/10"), // Water Level
-              fetch("/api/latest/1"), // Water Temp
-              fetch("/api/latest/11"), // pH
-              fetch("/api/latest/9"), // TDC
+            fetch("/api/latest/10"), // Water Level
+            fetch("/api/latest/1"), // Water Temp
+            fetch("/api/latest/11"), // pH
+            fetch("/api/latest/9"), // TDC
 
             // This section is for public website
             // fetch("https://terratekrwh.com/api/latest/10"), // Water Level
@@ -206,13 +206,13 @@ const Tank1: NextPage = () => {
           "
                 >
                     {/* Current Section */}
-                    <section className="bg-white rounded-lg shadow p-4">
+                    <section className="bg-slate-100 rounded-lg shadow p-4">
                         <h2 className="text-center text-xl font-semibold mb-3">
                             Current Freshwater Tank
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
                             {/* Water Level (liquid gauge) */}
-                            <div className="flex flex-col items-center justify-center bg-white p-4 rounded">
+                            <div className="flex flex-col items-center justify-center bg-slate-100 p-4 rounded">
                                 {renderLiquidGauge(waterLevel)}
                                 <span className="mt-2 font-medium">
                                     <strong>Water Level</strong>: {waterLevel}%
@@ -220,7 +220,7 @@ const Tank1: NextPage = () => {
                             </div>
 
                             {/* Water pH */}
-                            <div className="flex flex-col items-center bg-white p-4 rounded">
+                            <div className="flex flex-col items-center bg-slate-100 p-4 rounded">
                                 {pHData ? (
                                     renderGauge(currentPH, "", [0, 14], "blue")
                                 ) : (
@@ -232,7 +232,7 @@ const Tank1: NextPage = () => {
                             </div>
 
                             {/* TDC */}
-                            <div className="flex flex-col items-center bg-white p-4 rounded">
+                            <div className="flex flex-col items-center bg-slate-100 p-4 rounded">
                                 {tdcData ? (
                                     renderGauge(currentTDC, "", [0, 500], "green")
                                 ) : (
@@ -244,7 +244,7 @@ const Tank1: NextPage = () => {
                             </div>
 
                             {/* Temperature */}
-                            <div className="flex flex-col items-center bg-white p-4 rounded">
+                            <div className="flex flex-col items-center bg-slate-100 p-4 rounded">
                                 {waterTempData ? (
                                     renderGauge(currentTempF, "", [0, 212], "red")
                                 ) : (
@@ -258,13 +258,13 @@ const Tank1: NextPage = () => {
                     </section>
 
                     {/* Predicted Section */}
-                    <section className="bg-white rounded-lg shadow p-4">
+                    <section className="bg-slate-100 rounded-lg shadow p-4">
                         <h2 className=" text-center text-xl font-semibold mb-3">
                             Historical Freshwater Tank
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
                             {/* Predicted Water Level */}
-                            <div className="flex flex-col items-center bg-white justify-center p-4 rounded">
+                            <div className="flex flex-col items-center bg-slate-100 justify-center p-4 rounded">
                                 {renderLiquidGauge(predictedWaterLevel)}
                                 <span className="mt-2 font-medium">
                                     <strong>Water Level (Predicted)</strong>
@@ -272,7 +272,7 @@ const Tank1: NextPage = () => {
                             </div>
 
                             {/* Predicted pH */}
-                            <div className="flex flex-col items-center bg-white p-4 rounded">
+                            <div className="flex flex-col items-center bg-slate-100 p-4 rounded">
                                 {pHData ? (
                                     renderGauge(predictedPH, "", [0, 14], "blue")
                                 ) : (
@@ -284,7 +284,7 @@ const Tank1: NextPage = () => {
                             </div>
 
                             {/* Predicted TDC */}
-                            <div className="flex flex-col items-center bg-white p-4 rounded">
+                            <div className="flex flex-col items-center bg-slate-100 p-4 rounded">
                                 {tdcData ? (
                                     renderGauge(predictedTDC, "", [0, 500], "green")
                                 ) : (
@@ -296,7 +296,7 @@ const Tank1: NextPage = () => {
                             </div>
 
                             {/* Predicted Temperature */}
-                            <div className="flex flex-col items-center bg-white p-4 rounded">
+                            <div className="flex flex-col items-center bg-slate-100 p-4 rounded">
                                 {waterTempData ? (
                                     renderGauge(predictedTempF, "", [0, 212], "red")
                                 ) : (
@@ -310,7 +310,7 @@ const Tank1: NextPage = () => {
                     </section>
 
                     {/* Historical Data Section (3rd row, spanning 2 columns) */}
-                    <section className="bg-white rounded-lg shadow p-4 md:col-span-2">
+                    <section className="bg-slate-100 rounded-lg shadow p-4 md:col-span-2">
                         <h2 className="text-center text-xl font-semibold mb-3">Historical Data</h2>
                         <PlotlyComponent
                             data={[

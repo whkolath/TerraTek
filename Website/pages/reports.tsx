@@ -52,6 +52,8 @@ const Reports = () => {
         end: Date;
     }
 
+    const [quickTimeState, setQuickTimeState] = useState(3);
+
     const [unitType, setUnitType] = useState(1);
     const [graphDiv, setGraphDiv] = useState<HTMLElement | null>(null);
 
@@ -210,8 +212,6 @@ const Reports = () => {
 
                 const dates3 = data3.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp));
 
-
-
                 setDataset({
                     dates: dates,
                     values: values,
@@ -242,7 +242,6 @@ const Reports = () => {
 
         fetchData();
     }, [time, sensor, board, sensor2, board2, sensor3, board3, unitType, interval, aggregation, aggregation2, aggregation3]); // These are the dependant variables
-
 
     // This function handles download functionality
     const download = async function () {
@@ -352,7 +351,7 @@ const Reports = () => {
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 20, r: 20, b: 20 },
-                            xaxis: { automargin: true, tickformat: '%m/%d/%Y %I:%M %p' },
+                            xaxis: { automargin: true, tickformat: '%m/%d %I:%M %p' },
                             yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
                             yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
@@ -385,7 +384,7 @@ const Reports = () => {
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
-                            xaxis: { automargin: true, tickformat: '%m/%d/%Y %I:%M %p' },
+                            xaxis: { automargin: true, tickformat: '%m/%d %I:%M %p' },
                             yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
                             yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
@@ -418,7 +417,7 @@ const Reports = () => {
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
-                            xaxis: { automargin: true, tickformat: '%m/%d/%Y %I:%M %p' },
+                            xaxis: { automargin: true, tickformat: '%m/%d %I:%M %p' },
                             yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
                             yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board2 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
@@ -448,7 +447,7 @@ const Reports = () => {
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
-                            xaxis: { automargin: true, tickformat: '%m/%d/%Y %I:%M %p' },
+                            xaxis: { automargin: true, tickformat: '%m/%d %I:%M %p' },
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
@@ -472,7 +471,7 @@ const Reports = () => {
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
-                            xaxis: { automargin: true, tickformat: '%m/%d/%Y %I:%M %p' },
+                            xaxis: { automargin: true, tickformat: '%m/%d %I:%M %p' },
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
@@ -503,7 +502,7 @@ const Reports = () => {
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 40, r: 20, b: 40 },
-                            xaxis: { automargin: true, tickformat: '%m/%d/%Y %I:%M %p' },
+                            xaxis: { automargin: true, tickformat: '%m/%d %I:%M %p' },
                             yaxis: { automargin: true },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
@@ -534,7 +533,7 @@ const Reports = () => {
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 20, r: 20, b: 20 },
-                            xaxis: { automargin: true, tickformat: '%m/%d/%Y %I:%M %p' },
+                            xaxis: { automargin: true, tickformat: '%m/%d %I:%M %p' },
                             yaxis: { color: color, side: "left", anchor: 'x', position: 0, automargin: true, title: { text: sensor && board ? sensorList.Units[Number(sensor) - 1] : "" } },
                             yaxis2: sensor2 ? { color: color2, side: "right", anchor: 'x', overlaying: "y", automargin: true, title: { text: sensor2 && board3 ? sensorList.Units[Number(sensor2) - 1] : "" } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
                             yaxis3: sensor3 ? { color: color3, side: "right", anchor: "free", overlaying: "y", position: 1.15, automargin: true, title: { text: sensorList.Units[Number(sensor3) - 1] } } : { side: "right", overlaying: "y", automargin: true, showticklabels: false, showline: false, showgrid: false, zeroline: false },
@@ -560,7 +559,7 @@ const Reports = () => {
 
     return (
         <div className="flex flex-col lg:flex-row min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] gap-2">
-            <div className="w-full h-full grid gap-2 p-2 lg:grid-rows-[0.2fr_1fr_0.1fr] lg:grid-cols-4 md:grid-cols-2 grid-cols-1">
+            <div className="w-full h-full grid gap-2 p-2 lg:grid-rows-[0.2fr_1fr_0.1fr] lg:grid-cols-[0.5fr_0.9fr_0.45fr] md:grid-cols-2 grid-cols-1">
 
                 {/* Time Section */}
                 <div className="h-full w-full bg-slate-100 shadow-sm rounded-md">
@@ -589,18 +588,27 @@ const Reports = () => {
                             </Dropdown>
 
                             {/* Quick time selection buttons */}
-                            <Button onPress={() => setTime({
-                                start: new Date(new Date().setDate(new Date().getDate() - 1)),
-                                end: new Date()
-                            })} className="shadow-sm hidden md:block" color="primary" radius="sm">Past Day</Button>
-                            <Button onPress={() => setTime({
-                                start: new Date(new Date().setDate(new Date().getDay() - 7)),
-                                end: new Date()
-                            })} className="shadow-sm hidden md:block" color="primary" radius="sm">Past Week</Button>
-                            <Button onPress={() => setTime({
-                                start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-                                end: new Date()
-                            })} className="shadow-sm hidden md:block" color="primary" radius="sm">Past Month</Button>
+                            <Button onPress={() => {
+                                setTime({
+                                    start: new Date(new Date().setDate(new Date().getDate() - 1)),
+                                    end: new Date()
+                                });
+                                setQuickTimeState(1);
+                            }} className="shadow-sm hidden md:block" color={quickTimeState == 1 ? "success" : "primary"} radius="sm">Past Day</Button>
+                            <Button onPress={() => {
+                                setTime({
+                                    start: new Date(new Date().setDate(new Date().getDay() - 7)),
+                                    end: new Date()
+                                });
+                                setQuickTimeState(2);
+                            }} className="shadow-sm hidden md:block" color={quickTimeState == 2 ? "success" : "primary"} radius="sm">Past Week</Button>
+                            <Button onPress={() => {
+                                setTime({
+                                    start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+                                    end: new Date()
+                                });
+                                setQuickTimeState(3);
+                            }} className="shadow-sm hidden md:block" color={quickTimeState == 3 ? "success" : "primary"} radius="sm">Past Month</Button>
 
                             {/* Quick time selection dropdown */}
 
@@ -611,10 +619,13 @@ const Reports = () => {
                                     </Button>
                                 </DropdownTrigger>
                                 <DropdownMenu>
-                                    <DropdownItem onAction={() => setTime({
-                                        start: new Date(new Date().setDate(new Date().getDate() - 1)),
-                                        end: new Date()
-                                    })} key={1}>Past Day</DropdownItem>
+                                    <DropdownItem onAction={() => {
+                                        setTime({
+                                            start: new Date(new Date().setDate(new Date().getDate() - 1)),
+                                            end: new Date()
+                                        });
+                                        setQuickTimeState(4);
+                                    }} key={1}>Past Day</DropdownItem>
                                     <DropdownItem onAction={() => setTime({
                                         start: new Date(new Date().setDate(new Date().getDay() - 7)),
                                         end: new Date()
@@ -629,7 +640,7 @@ const Reports = () => {
                             {/* Date picker */}
                             <div className="md:col-span-3 col-span-2">
                                 <DateRangePicker
-                                    className="flex items-center justify-center h-full"
+                                    className="flex items-center justify-center h-full w-full"
                                     hideTimeZone
                                     label="Custom"
                                     defaultValue={{
@@ -652,7 +663,7 @@ const Reports = () => {
                                 <Dropdown className=" w-full">
                                     <DropdownTrigger>
                                         <Button className="shadow-sm w-full" radius="sm" variant="bordered" >
-                                            Time Intervals
+                                            Time Interval: {interval}
                                         </Button>
                                     </DropdownTrigger>
                                     <DropdownMenu onAction={(key) => setInterval(key.toString())}>
@@ -683,35 +694,21 @@ const Reports = () => {
                 </div>
 
                 {/* Sensor Selection Section */}
-                <div className="p-4 h-full md:col-span-2 bg-slate-100 shadow-sm rounded-md flex-grow lg:block hidden">
+                <div className="p-4 h-full bg-slate-100 shadow-sm rounded-md flex-grow lg:block hidden">
                     <h1 className="text-center text-xl font-semibold font-mono">Sensors</h1>
                     {/* Desktop Version */}
                     <div className="gap-2 grid-cols-6 lg:grid hidden w-full">
                         <div className="text-sm text-center"></div>
-                        <div className="text-sm text-center">Aggregation Type</div>
+
                         <p className="text-sm text-center">Cluster Location</p>
                         <p className="text-sm text-center">Sensor</p>
+                        <div className="text-sm text-center">Aggregation Type</div>
                         <div></div>
                         <div></div>
 
 
                         <h1 className="text-right w-full">Sensor 1:   </h1>
-                        <div>
-                            <Dropdown className=" w-full">
-                                <DropdownTrigger>
-                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                        Aggregation type
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu onAction={(key) => setAggregation(key.toString())}>
-                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
-                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
-                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
-                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
-                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
+
                         <div>
                             <Dropdown >
                                 <DropdownTrigger>
@@ -740,12 +737,28 @@ const Reports = () => {
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
+                        <div>
+                            <Dropdown className=" w-full">
+                                <DropdownTrigger>
+                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                                        {board && sensor || aggregation != "AVG" ? aggregation : "Aggregation type"}
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu onAction={(key) => setAggregation(key.toString())}>
+                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
+                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
 
                         <div>
-                            <Button className="shadow-sm w-full" size="sm" onPress={onOpen} >Select Color</Button>
+                            <Button style={{ backgroundColor: `${color}60` }} className="shadow-sm w-full font-semibold" size="sm" onPress={onOpen} >Select Color</Button>
                             <Modal isOpen={isOpen} onClose={onClose}>
                                 <ModalContent>
-                                    <ModalHeader className="flex flex-col text-center text-xl font-semibold font-mono">
+                                    <ModalHeader className="flex flex-col text-center text-xl font-semibold font-mono" >
                                         Select Color
                                     </ModalHeader>
                                     <ModalBody className="flex justify-center items-center gap-3">
@@ -764,22 +777,7 @@ const Reports = () => {
 
 
                         <h1 className="text-right w-full">Sensor 2:   </h1>
-                        <div>
-                            <Dropdown className=" w-full">
-                                <DropdownTrigger>
-                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                        Aggregation type
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu onAction={(key) => setAggregation2(key.toString())}>
-                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
-                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
-                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
-                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
-                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
+
                         <div>
                             <Dropdown>
                                 <DropdownTrigger>
@@ -809,10 +807,25 @@ const Reports = () => {
                             </Dropdown>
                         </div>
 
-
+                        <div>
+                            <Dropdown className=" w-full">
+                                <DropdownTrigger>
+                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                                        {board2 && sensor2 || aggregation2 != "AVG" ? aggregation2 : "Aggregation type"}
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu onAction={(key) => setAggregation2(key.toString())}>
+                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
+                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
 
                         <div>
-                            <Button className="shadow-sm w-full" size="sm" onPress={onOpen2}>Select Color</Button>
+                            <Button style={{ backgroundColor: `${color2}60` }} className="shadow-sm w-full font-semibold" size="sm" onPress={onOpen2}>Select Color</Button>
                             <Modal isOpen={isOpen2} onClose={onClose2}>
                                 <ModalContent>
                                     <ModalHeader className="flex flex-col text-center text-xl font-semibold font-mono">
@@ -833,22 +846,7 @@ const Reports = () => {
 
 
                         <h1 className="text-right w-full">Sensor 3:   </h1>
-                        <div>
-                            <Dropdown className=" w-full">
-                                <DropdownTrigger>
-                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                        Aggregation type
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu onAction={(key) => setAggregation3(key.toString())}>
-                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
-                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
-                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
-                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
-                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
+
                         <div>
                             <Dropdown>
                                 <DropdownTrigger>
@@ -878,9 +876,24 @@ const Reports = () => {
                             </Dropdown>
                         </div>
 
-
                         <div>
-                            <Button className="shadow-sm w-full" size="sm" onPress={onOpen3}>Select Color</Button>
+                            <Dropdown className=" w-full">
+                                <DropdownTrigger>
+                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                                        {board3 && sensor3 || aggregation3 != "AVG" ? aggregation3 : "Aggregation type"}
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu onAction={(key) => setAggregation3(key.toString())}>
+                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
+                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
+                        <div>
+                            <Button style={{ backgroundColor: `${color3}60` }} className="shadow-sm w-full font-semibold" size="sm" onPress={onOpen3}>Select Color</Button>
                             <Modal isOpen={isOpen3} onClose={onClose3}>
                                 <ModalContent>
                                     <ModalHeader className="flex flex-col text-center text-xl font-semibold font-mono">
@@ -911,12 +924,12 @@ const Reports = () => {
                     <div className="p-3">
 
                         <div className="grid lg:grid-cols-2 grid-cols-3 gap-2">
-                            <Button onPress={() => setChartType(1)} className="shadow-sm" color="primary" radius="sm">Line Chart</Button>
-                            <Button onPress={() => setChartType(2)} className="shadow-sm" color="primary" radius="sm">Scatter Plot</Button>
-                            <Button onPress={() => setChartType(3)} className="shadow-sm" color="primary" radius="sm">Bar Chart</Button>
-                            <Button onPress={() => setChartType(4)} className="shadow-sm" color="primary" radius="sm">Heatmap</Button>
-                            <Button onPress={() => setChartType(5)} className="shadow-sm" color="primary" radius="sm">Histogram</Button>
-                            <Button onPress={() => setChartType(6)} className="shadow-sm" color="primary" radius="sm">Violin Chart</Button>
+                            <Button onPress={() => setChartType(1)} className="shadow-sm" color={chartType == 1 ? "success" : "primary"} radius="sm">Line Chart</Button>
+                            <Button onPress={() => setChartType(2)} className="shadow-sm" color={chartType == 2 ? "success" : "primary"} radius="sm">Scatter Plot</Button>
+                            <Button onPress={() => setChartType(3)} className="shadow-sm" color={chartType == 3 ? "success" : "primary"} radius="sm">Bar Chart</Button>
+                            <Button onPress={() => setChartType(4)} className="shadow-sm" color={chartType == 4 ? "success" : "primary"} radius="sm">Heatmap</Button>
+                            <Button onPress={() => setChartType(5)} className="shadow-sm" color={chartType == 5 ? "success" : "primary"} radius="sm">Histogram</Button>
+                            <Button onPress={() => setChartType(6)} className="shadow-sm" color={chartType == 6 ? "success" : "primary"} radius="sm">Violin Chart</Button>
                         </div>
                     </div>
                 </div>
@@ -924,70 +937,15 @@ const Reports = () => {
                 <div className="p-4 h-full md:col-span-2 col-span-1 bg-slate-100 shadow-sm rounded-md flex-grow block lg:hidden">
                     <h1 className="text-center text-xl font-semibold font-mono">Sensors</h1>
                     {/* Mobile Version */}
-                    <div className=" grid flex-grow gap-2 grid-cols-4 lg:hidden w-full">
+                    <div className=" grid flex-grow gap-2 grid-cols-3 md:grid-cols-[0.5fr_1fr_1fr_1fr] lg:hidden w-full">
 
 
-                        <div></div>
+                        <div className="md:block hidden"></div>
                         <h1 className="text-center w-full">Sensor 1</h1>
                         <h1 className="text-center w-full">Sensor 2</h1>
                         <h1 className="text-center w-full">Sensor 3</h1>
 
-
-                        <div className="text-sm text-right">Aggregation Type:   </div>
-
-                        <div>
-                            <Dropdown className=" w-full">
-                                <DropdownTrigger>
-                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                        Aggregation type
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu onAction={(key) => setAggregation(key.toString())}>
-                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
-                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
-                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
-                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
-                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-
-                        <div>
-                            <Dropdown className=" w-full">
-                                <DropdownTrigger>
-                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                        Aggregation type
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu onAction={(key) => setAggregation2(key.toString())}>
-                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
-                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
-                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
-                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
-                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-
-                        <div>
-                            <Dropdown className=" w-full">
-                                <DropdownTrigger>
-                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                                        Aggregation type
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu onAction={(key) => setAggregation3(key.toString())}>
-                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
-                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
-                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
-                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
-                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-
-
-                        <p className="text-sm text-right">Cluster Location:   </p>
+                        <p className="text-sm text-right md:block hidden">Cluster Location:   </p>
                         <div>
                             <Dropdown >
                                 <DropdownTrigger>
@@ -1033,7 +991,7 @@ const Reports = () => {
                             </Dropdown>
                         </div>
 
-                        <p className="text-sm text-right">Sensor:   </p>
+                        <p className="text-sm text-right md:block hidden">Sensor:   </p>
 
                         <Dropdown>
                             <DropdownTrigger>
@@ -1077,10 +1035,61 @@ const Reports = () => {
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
+                        <div className="text-sm text-right md:block hidden">Aggregation Type:   </div>
 
-                        <div></div>
                         <div>
-                            <Button className="shadow-sm w-full" size="sm" onPress={onOpen} >Select Color</Button>
+                            <Dropdown className=" w-full">
+                                <DropdownTrigger>
+                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                                        {board && sensor || aggregation != "AVG" ? aggregation : "Aggregation type"}
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu onAction={(key) => setAggregation(key.toString())}>
+                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
+                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
+
+                        <div>
+                            <Dropdown className=" w-full">
+                                <DropdownTrigger>
+                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                                        {board2 && sensor2 || aggregation2 != "AVG" ? aggregation2 : "Aggregation type"}
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu onAction={(key) => setAggregation2(key.toString())}>
+                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
+                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
+
+                        <div>
+                            <Dropdown className=" w-full">
+                                <DropdownTrigger>
+                                    <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
+                                        {board3 && sensor3 || aggregation3 != "AVG" ? aggregation3 : "Aggregation type"}
+                                    </Button>
+                                </DropdownTrigger>
+                                <DropdownMenu onAction={(key) => setAggregation3(key.toString())}>
+                                    <DropdownItem key={"AVG"}>Average</DropdownItem>
+                                    <DropdownItem key={"MEDIAN"}>Median</DropdownItem>
+                                    <DropdownItem key={"MIN"}>Minimum</DropdownItem>
+                                    <DropdownItem key={"MAX"}>Maximum</DropdownItem>
+                                    <DropdownItem key={"SUM"}>Sum</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
+                        <div className="md:block hidden"></div>
+                        <div>
+                            <Button style={{ backgroundColor: `${color}60` }} className="shadow-sm w-full font-semibold" size="sm" onPress={onOpen} >Select Color</Button>
                             <Modal isOpen={isOpen} onClose={onClose}>
                                 <ModalContent>
                                     <ModalHeader className="flex flex-col text-center text-xl font-semibold font-mono">
@@ -1098,7 +1107,7 @@ const Reports = () => {
                         </div>
 
                         <div>
-                            <Button className="shadow-sm w-full" size="sm" onPress={onOpen2}>Select Color</Button>
+                            <Button style={{ backgroundColor: `${color2}60` }} className="shadow-sm w-full font-semibold" size="sm" onPress={onOpen2}>Select Color</Button>
                             <Modal isOpen={isOpen2} onClose={onClose2}>
                                 <ModalContent>
                                     <ModalHeader className="flex flex-col text-center text-xl font-semibold font-mono">
@@ -1115,7 +1124,7 @@ const Reports = () => {
                         </div>
 
                         <div>
-                            <Button className="shadow-sm w-full" size="sm" onPress={onOpen3}>Select Color</Button>
+                            <Button style={{ backgroundColor: `${color3}60` }} className="shadow-sm w-full font-semibold" size="sm" onPress={onOpen3}>Select Color</Button>
                             <Modal isOpen={isOpen3} onClose={onClose3}>
                                 <ModalContent>
                                     <ModalHeader className="flex flex-col text-center text-xl font-semibold font-mono">
@@ -1130,7 +1139,7 @@ const Reports = () => {
                                 </ModalContent>
                             </Modal>
                         </div>
-                        <div></div>
+                        <div className="md:block hidden"></div>
                         <div>
                             <Button onPress={() => [setSensor("1"), setBoard("0xa8610a34362d800f")]} className="shadow-sm w-full" color="danger" radius="sm" size="sm">Reset</Button>
                         </div>
@@ -1149,7 +1158,7 @@ const Reports = () => {
                 </div>
 
                 {/* Chart Display Area */}
-                <div className="md:row-span-2 col-span-1 p-4 h-full  bg-slate-100 shadow-sm rounded-md lg:col-span-3 md:col-span-2 flex flex-col">
+                <div className="md:row-span-2 col-span-1 p-4 h-full  bg-slate-100 shadow-sm rounded-md lg:col-span-2 md:col-span-2 flex flex-col">
                     <h1 className="text-center text-xl font-semibold font-mono">Chart</h1>
                     <div className="flex-grow h-full w-full min-h-[400px]" id="plotly-plot">
 

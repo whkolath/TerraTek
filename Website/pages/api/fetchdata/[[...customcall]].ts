@@ -93,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const queryParams: (string | number)[] = [];
 
         // Base WHERE clause
-        let whereClause = 'WHERE r.Sensor_Timestamp BETWEEN ? AND ?';
+        let whereClause = 'WHERE r.Sensor_Timestamp BETWEEN ? AND ? AND r.Error_ID = 0';
         queryParams.push(startTimeFormatted, endTimeFormatted);
 
         // Add sensor ID condition (if provided)
