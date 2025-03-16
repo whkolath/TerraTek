@@ -19,9 +19,9 @@ export default async function handler(
 ): Promise<void> {
     try {
         const board_id = req.query.board;
-        const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT COUNT(r.Sensor_Timestamp) AS Online
+        const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT MAX(r.Sensor_Timestamp) AS LastTimestamp
                         FROM Readings r JOIN Boards b ON r.Board_ID = b.Board_ID 
-                        WHERE r.Board_ID = ? AND r.Sensor_Timestamp > (NOW() - INTERVAL 5 MINUTE) 
+                        WHERE r.Board_ID = ?
                         ORDER BY r.Sensor_Timestamp DESC LIMIT 1`, [board_id]);
         res.status(200).json(results);
     } catch (err) {

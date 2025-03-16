@@ -68,13 +68,16 @@ const HealthPage = () => {
             try {
 
                 // Fetch the data from the API
-                const [response, rate1Response, rate2Response, online1Response, online2Response] = await Promise.all([
+                const [response, rate1Response, rate2Response, online1Response, online2Response, last1Response, last2Response] = await Promise.all([
                     fetch(`/api/rate/720`),
                     fetch(`/api/rate/latest/0xa8610a34362d800f`), //Playa Weather Station
                     fetch(`/api/rate/latest/0xa8610a3436268316`),  //Fresh Water Tank
 
                     fetch(`/api/rate/online/0xa8610a34362d800f`),  //Playa Weather Station
-                    fetch(`/api/rate/online/0xa8610a3436268316`)  //Fresh Water Tank
+                    fetch(`/api/rate/online/0xa8610a3436268316`),  //Fresh Water Tank
+
+                    fetch(`/api/rate/last_transmission/0xa8610a34362d800f`),  //Playa Weather Station
+                    fetch(`/api/rate/last_transmission/0xa8610a3436268316`)  //Fresh Water Tank
                 ]);
 
                 const rate = await response.json();
@@ -83,10 +86,13 @@ const HealthPage = () => {
                 const rate2Data = await rate2Response.json();
                 setRate2(rate2Data[0].Number_Reading);
 
+                const last1Data = await last1Response.json();
+                const last2Data = await last2Response.json();
+
                 const online1Data = await online1Response.json();
                 setOnline1({
                     online: online1Data[0].Online ? true : false,
-                    last_reading: new Date(online1Data[0].LastTimestamp).toLocaleString("en-US", {
+                    last_reading: new Date(last1Data[0].LastTimestamp).toLocaleString("en-US", {
                         timeZone: "America/Chicago",
                         timeStyle: "medium",
                         dateStyle: "short",
@@ -97,7 +103,7 @@ const HealthPage = () => {
                 const online2Data = await online2Response.json();
                 setOnline2({
                     online: online2Data[0].Online ? true : false,
-                    last_reading: new Date(online2Data[0].LastTimestamp).toLocaleString("en-US", {
+                    last_reading: new Date(last2Data[0].LastTimestamp).toLocaleString("en-US", {
                         timeZone: "America/Chicago",
                         timeStyle: "medium",
                         dateStyle: "short",

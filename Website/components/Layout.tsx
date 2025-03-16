@@ -39,7 +39,7 @@ const geistSans = Geist({
 
 
     const menuItems = [
-        { name: "Home", link: "/home" },
+        { name: "Home", link: "/" },
         { name: "Freshwater Tank", link: "/tank1" },
         { name: "Greywater Tank", link: "/tank2" },
         { name: "Weather Conditions", link: "/weather" },
@@ -118,35 +118,3 @@ const geistSans = Geist({
 
 
 
-{/* <div className="h-4 w-4 bg-slate-100 text-black flex items-left"> */}
-    {/* Sidebar */}
-    {/* <Dropdown className="w-full">
-        <DropdownTrigger>
-            <Button className="shadow-sm w-full" radius="sm" variant="bordered" size="sm">
-                Pages
-            </Button>
-        </DropdownTrigger>
-        <DropdownMenu>
-            <DropdownItem key="tanks">
-                <Dropdown className="w-full">
-                    <DropdownTrigger>
-                        <Button className="w-full items-left" variant="light" size="sm">
-                            Tanks
-                        </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu>
-                        <DropdownItem key="fresh-water">
-                            <Link href="/tank1">Fresh Water</Link>
-                        </DropdownItem>
-                        <DropdownItem key="grey-water">
-                            <Link href="/tank2">Grey Water</Link>
-                        </DropdownItem>
-                    </DropdownMenu>
-                </Dropdown>
-            </DropdownItem>
-            <DropdownItem key="condition"><Link href="/weather">Condition</Link></DropdownItem>
-            <DropdownItem key="reports"><Link href="/reports">Reports</Link></DropdownItem>
-            <DropdownItem key="comments">Comments</DropdownItem>
-        </DropdownMenu>
-    </Dropdown>
-</div> */}
