@@ -171,6 +171,7 @@ const Tank1: NextPage = () => {
           paper_bgcolor: '#f1f5f9',
           plot_bgcolor: '#f1f5f9',
         }}
+        config={{ displayModeBar: false, responsive: true }}
         useResizeHandler
         style={{ width: "100%", height: "200px" }}
       />

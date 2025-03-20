@@ -32,7 +32,7 @@ const Dashboard = () => {
         0: "/Weather_Images/110805_sun_icon.svg",
         1: "/Weather_Images/9044965_partly_cloudy_icon.svg",
         2: "/Weather_Images/9044965_partly_cloudy_icon.svg",
-        3: "/Weather_Images/198562_partly_cloudy_sun_icon.svg",
+        3: "/Weather_Images/198562_partly cloud_sun_sunny_grey_clody_icon.svg",
         45: "/Weather_Images/390496_cloud_fog_sun_icon.svg",
         48: "/Weather_Images/390496_cloud_fog_sun_icon.svg",
         51: "/Weather_Images/5719164_cloud_drizzle_rain_icon.svg",
@@ -51,10 +51,12 @@ const Dashboard = () => {
         96: "/Weather_Images/9045272_thunderstorm_icon.svg",
         99: "/Weather_Images/9045272_thunderstorm_icon.svg",
     };
-    
+
     const getWeatherImage = (code: number | undefined): string => {
-        return code !== undefined && code in weatherImages ? weatherImages[code] : "/Weather_Images/110805_sun_icon.svg";
+        const codeNumber = Number(code); // Ensure it's a number
+        return codeNumber in weatherImages ? weatherImages[codeNumber] : "/Weather_Images/2849810_cross_multimedia_error_delite_icon.svg";
     };
+
 
     const weatherDescriptions: { [key: number]: string } = {
         0: "Clear sky",
@@ -92,12 +94,12 @@ const Dashboard = () => {
     };
 
     const [weather, setWeather] = useState<Weather | null>(null);
-    const [waterLevelData, setWaterLevelData] = useState<SensorReading[] | null>(null);
-    const [TempData, setTempData] = useState<SensorReading[] | null>(null);
-    const [WSData, setWSData] = useState<SensorReading[] | null>(null);
-    const [WDData, setWDData] = useState<SensorReading[] | null>(null);
-    const [HumdityData, setHumdityData] = useState<SensorReading[] | null>(null);
-    const [PressureData, setPressureData] = useState<SensorReading[] | null>(null);
+    const [waterLevelData, setWaterLevelData] = useState<number | null>(null);
+    const [TempData, setTempData] = useState<number | null>(null);
+    const [WSData, setWSData] = useState<number | null>(null);
+    const [WDData, setWDData] = useState<number | null>(null);
+    const [HumdityData, setHumdityData] = useState<number | null>(null);
+    const [PressureData, setPressureData] = useState<number | null>(null);
 
     // Helper: Format a time string to Nazareth, TX local time ("America/Chicago")
     function formatTimeToNazareth(timeString: string): string {
@@ -115,9 +117,17 @@ const Dashboard = () => {
     });
 
     const [freshWaterData, setFreshWaterData] = useState<SensorReading[] | null>(null);
-
-    const board = "0xa8610a3436268316";
-    const sensor = "10"; // Replace with actual sensor ID
+    const [greyWaterData, setGreyWaterData] = useState<SensorReading[] | null>(null);
+    //    const board_greywater = ""
+    const board_weatherstation = "0xa8610a34362d800f";
+    const board_freshwater = "0xa8610a3436268316";
+    const board_greywater = "0xa8610a3436268316";
+    const sensor_WaterLevel = "10"; // Replace with actual sensor ID
+    const sensor_Temp = "1"
+    const sensor_WindS = "6"
+    const sensor_WindD = "7"
+    const sensor_Humidity = "3"
+    const sensor_Pressure = "4"
     const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
     const interval = "hourly"; // Options: "halfhour", "hourly", "daily"
 
@@ -125,83 +135,91 @@ const Dashboard = () => {
         const fetchFreshWaterData = async () => {
             try {
                 const response = await fetch(
-                    `/api/fetchdata/sensor-data?board=${board}&sensor=${sensor}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`
+                    `/api/fetchdata/sensor-data?board=${board_freshwater}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`
                 );
-    
+
                 if (!response.ok) {
                     throw new Error(`Failed to fetch data: ${response.statusText}`);
                 }
-    
+
                 const data: SensorReading[] = await response.json();
                 setFreshWaterData(data);
             } catch (error) {
                 console.error("Error fetching fresh water data:", error);
             }
         };
-    
+
         fetchFreshWaterData();
     }, [time]);
 
     useEffect(() => {
-        Promise.all([
-            fetch("/api/latest/10"), // Water Level
-            fetch("/api/latest/1"),  // Temp
-            fetch("/api/latest/6"),  // Wind Speed
-            fetch("/api/latest/7"),  // Wind Direction
-            fetch("/api/latest/3"),  // Humidity
-            fetch("/api/latest/4"),  // Pressure
-        ])
-            .then((responses) => Promise.all(responses.map((r) => r.json())))
-            .then(([data2, data3, data4, data5, data6, data7]) => {
-                console.log("Fetched sensor data:", { data2, data3, data4, data5, data6, data7 });
+        const fetchGreyWaterData = async () => {
+            try {
+                const response = await fetch(
+                    `/api/fetchdata/sensor-data?board=${board_greywater}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`
+                );
 
-                data2.reverse();
-                data3.reverse();
-                data4.reverse();
-                data5.reverse();
-                data6.reverse();
-                data7.reverse();
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.statusText}`);
+                }
 
-                setWaterLevelData(data2);
-                setTempData(data3);
-                setWSData(data4);
-                setWDData(data5);
-                setHumdityData(data6);
-                setPressureData(data7);
-            })
-            .catch((err) => console.error("Error fetching sensor data:", err));
+                const data: SensorReading[] = await response.json();
+                setGreyWaterData(data);
+            } catch (error) {
+                console.error("Error fetching fresh water data:", error);
+            }
+        };
+
+        fetchGreyWaterData();
+    }, [time]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const [reading2, reading3, reading4, reading5, reading6, reading7] = await Promise.all([
+                    fetch(`/api/fetchdata/sensor-data?board=${board_freshwater}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1`), // Water Level
+                    fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Temp}&calc=${aggregation}&timeframe=1`),  // Temp
+                    fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindS}&calc=${aggregation}&timeframe=1`),  // Wind Speed
+                    fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindD}&calc=${aggregation}&timeframe=1`),  // Wind Direction
+                    fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Humidity}&calc=${aggregation}&timeframe=1`),  // Humidity
+                    fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1`),
+                ]);
+
+            // Parse the JSON
+
+            const data2 = await reading2.json();
+            const data3 = await reading3.json();
+            const data4 = await reading4.json();
+            const data5 = await reading5.json();
+            const data6 = await reading6.json();
+            const data7 = await reading7.json();
+
+            console.log(data7);
+            console.log(data2[0].Calculated_Reading);
+
+            setWaterLevelData(data2 ? data2[0].Calculated_Reading : null);
+            setTempData(data3 ? data2[0].Calculated_Reading : null);
+            setWSData(data4 ? data2[0].Calculated_Reading : null);
+            setWDData(data5 ? data2[0].Calculated_Reading : null);
+            setHumdityData(data6 ? data2[0].Calculated_Reading : null);
+            setPressureData(data7 ? data2[0].Calculated_Reading : null);
+        };
+
+        fetchData();
     }, []);
 
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                const response = await fetch(
-                    "https://api.open-meteo.com/v1/forecast?latitude=34.5442&longitude=-102.1027&daily=weathercode,sunrise,sunset,precipitation_probability_max&current_weather=true&timezone=America%2FChicago"
-                );
+                const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=34.5442&longitude=-102.1027&daily=weathercode,sunrise,sunset,precipitation_probability_max&current_weather=true&timezone=America%2FChicago");
                 const data = await response.json();
-                console.log("Fetched weather data:", data);
-                const daily = data.daily;
-                if (daily) {
-                    const weatherCode = daily.weathercode
-                        ? daily.weathercode[0]
-                        : daily.weather_code
-                            ? daily.weather_code[0]
-                            : undefined;
+                console.log("Fetched weather data:", data); // Debugging
+                if (data.daily) {
                     setWeather({
-                        weathercode: weatherCode,
-                        sunrise: daily.sunrise[0],
-                        sunset: daily.sunset[0],
-                        precipitation_probability_max: daily.precipitation_probability_max[0],
+                        weathercode: data.daily.weathercode?.[0] ?? data.current_weather?.weathercode,
+                        sunrise: data.daily.sunrise?.[0] ?? "N/A",
+                        sunset: data.daily.sunset?.[0] ?? "N/A",
+                        precipitation_probability_max: data.daily.precipitation_probability_max?.[0] ?? 0,
                     });
-                } else if (data.current_weather) {
-                    setWeather({
-                        weathercode: data.current_weather.weathercode,
-                        sunrise: "N/A",
-                        sunset: "N/A",
-                        precipitation_probability_max: 0,
-                    });
-                } else {
-                    console.error("No daily weather data available:", data);
                 }
             } catch (error) {
                 console.error("Error fetching weather data:", error);
@@ -209,12 +227,10 @@ const Dashboard = () => {
         };
         fetchWeather();
     }, []);
-    
 
-    function latestValue(data: SensorReading[] | null): number {
-        if (!data || data.length === 0) return 0;
-        return data[data.length - 1].Sensor_Value;
-    }
+
+
+    
 
     // Conversion helper functions
     function celsiusToFahrenheit(celsius: number): number {
@@ -234,7 +250,7 @@ const Dashboard = () => {
         return directions[index];
     }
 
-    const waterLevel = Math.round(latestValue(waterLevelData));
+    const waterLevel = Math.round(waterLevelData ?? 0);
     const predictedWaterLevel = Math.min(waterLevel + 10, 100);
 
     // Liquid gauge color logic
@@ -302,10 +318,10 @@ const Dashboard = () => {
     function renderFreshWaterScatterPlot() {
         if (!freshWaterData) return <div>Loading sensor data...</div>;
         if (freshWaterData.length === 0) return <div>No Fresh Water data available.</div>;
-    
+
         const xValues = freshWaterData.map((reading) => reading.Interval_Timestamp); // Updated field
         const yValues = freshWaterData.map((reading) => reading.Calculated_Reading); // Updated field
-    
+
         return (
             <PlotlyComponent
                 data={[
@@ -326,48 +342,53 @@ const Dashboard = () => {
                     paper_bgcolor: '#f1f5f9',
                     plot_bgcolor: '#f1f5f9',
                 }}
+                config={{ displayModeBar: false, responsive: true }}
                 useResizeHandler
-                style={{ width: "100%", height: "300px" }} // Increased height for better visibility
+                style={{ width: "100%", height: "700px" }} // Increased height for better visibility
             />
         );
     }
 
     function renderGreyWaterScatterPlot() {
-        if (!waterLevelData) return <div>Loading sensor data...</div>;
-        if (waterLevelData.length === 0) return <div>No Grey Water data available.</div>;
-        const xValues = waterLevelData.map((reading) => reading.Sensor_Timestamp);
-        const yValues = waterLevelData.map((reading) => Math.min(reading.Sensor_Value + 10, 100));
+        if (!greyWaterData) return <div>Loading sensor data...</div>;
+        if (greyWaterData.length === 0) return <div>No Fresh Water data available.</div>;
+
+        const xValues = greyWaterData.map((reading) => reading.Interval_Timestamp); // Updated field
+        const yValues = greyWaterData.map((reading) => reading.Calculated_Reading); // Updated field
+
         return (
             <PlotlyComponent
                 data={[
                     {
                         type: "scatter",
-                        mode: "markers",
+                        mode: "lines+markers", // Use lines for better trend visualization
                         x: xValues,
                         y: yValues,
-                        marker: { color: "grey" },
+                        marker: { color: "blue" },
+                        line: { shape: "spline" }, // Smooth the line
                     },
                 ]}
                 layout={{
                     autosize: true,
                     margin: { t: 20, r: 20, l: 40, b: 40 },
-                    xaxis: { title: "Timestamp" },
-                    yaxis: { title: "Grey Water Level" },
+                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    yaxis: { title: "Fresh Water Level (AVG)" },
                     paper_bgcolor: '#f1f5f9',
                     plot_bgcolor: '#f1f5f9',
                 }}
+                config={{ displayModeBar: false, responsive: true }}
                 useResizeHandler
-                style={{ width: "100%", height: "200px" }}
+                style={{ width: "100%", height: "700px" }} // Increased height for better visibility
             />
         );
     }
 
     return (
-        <div className="w-full min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] flex flex-col md:flex-row overflow-hidden">
+        <div className="w-full min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] flex flex-col md:flex-row overflow-y-auto">
             {/* Main Sensor Grid */}
-            <div className="flex-grow p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="flex-grow h-full p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
                 {/* Fresh Water Section */}
-                <div className="bg-slate-100 shadow-sm rounded-md p-4 flex flex-col items-center">
+                <div className="bg-slate-100 shadow-sm rounded-md p-2 flex flex-col flex-grow items-center">
                     <h2 className="text-center text-xl font-semibold font-mono">Fresh Water</h2>
                     {renderLiquidGauge(waterLevel, "blue")}
                     <div className="w-full mt-4">
@@ -379,7 +400,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Grey Water Section */}
-                <div className="bg-slate-100 shadow-sm rounded-md p-4 flex flex-col items-center">
+                <div className="bg-slate-100 shadow-sm rounded-md p-2 flex flex-col items-center">
                     <h2 className="text-center text-xl font-semibold font-mono">Grey Water</h2>
                     {renderLiquidGauge(predictedWaterLevel, "grey")}
                     <div className="w-full mt-4">
@@ -389,75 +410,110 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* About Section */}
-                <div className="col-span-1 md:col-span-2 bg-slate-100 shadow-sm rounded-md p-2">
-                    <h2 className="text-xl font-semibold font-mono">About</h2>
-                    <p className="mt-2 text-gray-600">
-                        Description about the system and its functionalities.
-                    </p>
-                </div>
-
-                {/* Purpose Section */}
-                <div className="col-span-1 md:col-span-2 bg-slate-100 shadow-sm rounded-md p-2">
-                    <h2 className="text-xl font-semibold font-mono">Purpose</h2>
-                    <p className="mt-2 text-gray-600">
-                        Explanation of the purpose and objectives of the system.
-                    </p>
-                </div>
+                
             </div>
 
             {/* Weather Plug-in Section */}
-            <div className="w-full md:w-1/6 md:h-screen p-2 bg-slate-100 shadow-sm rounded-none flex flex-col">
-                <h2 className="text-center text-xl font-semibold font-mono">Weather</h2>
-                <div className="w-full h-full mt-4 bg-gray-300 p-2 flex flex-col items-center justify-evenly text-center">
+            <div className="w-full md:w-1/5 md:h-[calc(100vh-50px)] p-2 bg-slate-100 shadow-sm rounded-none flex-grow flex-col overflow-y-auto">
+                <h2 className="text-center text-xl flew-grow font-semibold font-mono">Weather</h2>
+                <div className="w-full h-full mt-4 bg-gray-300 p-2 flex flex-col flew-grow items-center justify-evenly text-center overflow-y-auto">
                     {weather ? (
-                        <div>
-                            <div>
+                        <div className="flex flex-col items-center flew-grow overflow-y-auto">
+                            <div className="flex flex-col items-center">
                                 <strong>Daily:</strong>
                                 <Image
-                                src={getWeatherImage(weather.weathercode)}
-                                width={40} // Adjust as needed
-                                height={40} // Adjust as needed
-                                className="object-contain mb-4"
-                                alt="Weather Condition"
+                                    src={getWeatherImage(weather.weathercode)}
+                                    width={40}
+                                    height={40}
+                                    className="object-contain mb-4 mx-auto"
+                                    alt="Weather Condition"
                                 />
-                                <p className="text-xl font-semibold">{getWeatherDescription(weather.weathercode)}</p>
+                                <p className="flex flex-col items-center">{getWeatherDescription(weather.weathercode)}</p>
+
+                                <Image
+                                    src={"/Weather_Images/9040596_sunrise_icon.svg"}
+                                    width={40}
+                                    height={40}
+                                    className="object-contain mb-4 mx-auto"
+                                    alt="Sunrise"
+                                />
                                 <p>Sunrise: {formatTimeToNazareth(weather.sunrise)}</p>
+
+                                <Image
+                                    src={"/Weather_Images/8666700_sunset_icon.svg"}
+                                    width={40}
+                                    height={40}
+                                    className="object-contain mb-4 mx-auto"
+                                    alt="Sunset"
+                                />
                                 <p>Sunset: {formatTimeToNazareth(weather.sunset)}</p>
+
+                                <Image
+                                    src={"/Weather_Images/727683_rain_water_cloud_drop_forecast_icon.svg"}
+                                    width={40}
+                                    height={40}
+                                    className="object-contain mb-4 mx-auto"
+                                    alt="Precipitation"
+                                />
                                 <p>Precipitation: {weather.precipitation_probability_max}%</p>
                             </div>
-                            <div>
+
+                            <div className="flex flex-col items-center">
                                 <strong>Current:</strong>
-                                <p>
-                                    Temperature:{" "}
-                                    {TempData
-                                        ? celsiusToFahrenheit(latestValue(TempData)).toFixed(2)
-                                        : "Loading..."} °F
+
+                                <p className="flex flex-col items-center">
+                                    <Image
+                                        src={"/Weather_Images/8665892_temperature_half_icon.svg"}
+                                        width={25}
+                                        height={25}
+                                        className="object-contain mb-2 mx-auto"
+                                        alt="Temperature"
+                                    />
+                                    Temperature: {TempData ? celsiusToFahrenheit(TempData).toFixed(2) : "Loading..."} °F
                                 </p>
-                                <p>
-                                    Wind Speed:{" "}
-                                    {WSData
-                                        ? kphToMph(latestValue(WSData)).toFixed(2)
-                                        : "Loading..."} mph
+
+                                <p className="flex flex-col items-center">
+                                    <Image
+                                        src={"/Weather_Images/9024034_wind_fill_icon.svg"}
+                                        width={40}
+                                        height={40}
+                                        className="object-contain mb-2 mx-auto"
+                                        alt="Wind Speed"
+                                    />
+                                    Wind Speed: {WSData ? kphToMph(WSData).toFixed(2) : "Loading..."} mph
                                 </p>
-                                <p>
-                                    Wind Direction:{" "}
-                                    {WDData
-                                        ? convertWindDirection(latestValue(WDData))
-                                        : "Loading..."}
+
+                                <p className="flex flex-col items-center">
+                                    <Image
+                                        src={"/Weather_Images/8875188_wind_direction_arrow_icon.svg"}
+                                        width={40}
+                                        height={40}
+                                        className="object-contain mb-2 mx-auto"
+                                        alt="Wind Direction"
+                                    />
+                                    Wind Direction: {WDData ? convertWindDirection(WDData) : "Loading..."}
                                 </p>
-                                <p>
-                                    Humidity:{" "}
-                                    {HumdityData
-                                        ? latestValue(HumdityData).toFixed(2)
-                                        : "Loading..."}
+
+                                <p className="flex flex-col items-center">
+                                    <Image
+                                        src={"/Weather_Images/9132537_humidity_air conditining_ac_conditioner_split ac_icon.svg"}
+                                        width={40}
+                                        height={40}
+                                        className="object-contain mb-2 mx-auto"
+                                        alt="Humidity"
+                                    />
+                                    Humidity: {HumdityData ? HumdityData.toFixed(2) : "Loading..."}
                                 </p>
-                                <p>
-                                    Pressure:{" "}
-                                    {PressureData
-                                        ? latestValue(PressureData).toFixed(2)
-                                        : "Loading..."}
+
+                                <p className="flex flex-col items-center">
+                                    <Image
+                                        src={"/Weather_Images/809411_gauge_indication_indicator_miscellaneous_pressure_icon.svg"}
+                                        width={30}
+                                        height={30}
+                                        className="object-contain mb-2 mx-auto"
+                                        alt="Pressure"
+                                    />
+                                    Pressure: {PressureData ? PressureData.toFixed(2) : "Loading..."}
                                 </p>
                             </div>
                         </div>
@@ -466,6 +522,7 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
+
         </div>
     );
 };
