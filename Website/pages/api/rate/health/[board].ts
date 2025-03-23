@@ -18,23 +18,16 @@ export default async function handler(
     res: NextApiResponse
 ): Promise<void> {
     try {
-
-        const board = req.query.board as string;
-        if (!board) {
-            res.status(400).json({ error: 'Board parameter is required' });
-            return;
-        }
-        const [results] = await db.execute<mysql.RowDataPacket[]>(`
-            SELECT 
-            COUNT(r.Sensor_Value) AS Number_Reading
-            FROM
+        const board_id = req.query.board;
+        const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT
+            MAX(r.Sensor_Timestamp) AS LastTimestamp,
+            SUM(CASE WHEN r.Sensor_Timestamp >= NOW() - INTERVAL 1 HOUR THEN 1 ELSE 0 END) AS Number_Reading,
+            MAX(CASE WHEN r.Sensor_Timestamp > NOW() - INTERVAL 5 MINUTE THEN 1 ELSE 0 END) AS Online
+        FROM
             Readings r
-            WHERE
+        WHERE
             r.Board_ID = ?
-            AND r.Sensor_Timestamp >= NOW() - INTERVAL 1 HOUR
-            AND r.Sensor_Timestamp < NOW();
-        `, [board]);
-        console.log(board);
+    `, [board_id]);
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);

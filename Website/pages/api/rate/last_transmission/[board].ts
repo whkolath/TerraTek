@@ -20,9 +20,8 @@ export default async function handler(
     try {
         const board_id = req.query.board;
         const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT MAX(r.Sensor_Timestamp) AS LastTimestamp
-                        FROM Readings r JOIN Boards b ON r.Board_ID = b.Board_ID 
-                        WHERE r.Board_ID = ?
-                        ORDER BY r.Sensor_Timestamp DESC LIMIT 1`, [board_id]);
+                FROM Readings r 
+                WHERE r.Board_ID = ?`, [board_id]);
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);
