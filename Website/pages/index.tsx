@@ -181,7 +181,7 @@ const Dashboard = () => {
                     fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindS}&calc=${aggregation}&timeframe=1`),  // Wind Speed
                     fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindD}&calc=${aggregation}&timeframe=1`),  // Wind Direction
                     fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Humidity}&calc=${aggregation}&timeframe=1`),  // Humidity
-                    fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1`),
+                    fetch(`/api/fetchdata/sensor-data?board=${board_freshwater}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1`), //Pressure
                 ]);
 
             // Parse the JSON
@@ -193,15 +193,16 @@ const Dashboard = () => {
             const data6 = await reading6.json();
             const data7 = await reading7.json();
 
-            console.log(data7);
-            console.log(data2[0].Calculated_Reading);
+            console.log(data7);            
+            console.log(data7 ? data2[0].Calculated_Reading : null);
 
             setWaterLevelData(data2 ? data2[0].Calculated_Reading : null);
-            setTempData(data3 ? data2[0].Calculated_Reading : null);
-            setWSData(data4 ? data2[0].Calculated_Reading : null);
-            setWDData(data5 ? data2[0].Calculated_Reading : null);
-            setHumdityData(data6 ? data2[0].Calculated_Reading : null);
-            setPressureData(data7 ? data2[0].Calculated_Reading : null);
+            setTempData(data3 ? data3[0].Calculated_Reading : null);
+            setWSData(data4 ? data4[0].Calculated_Reading : null);
+            setWDData(data5 ? data5[0].Calculated_Reading : null);
+            setHumdityData(data6 ? data6[0].Calculated_Reading : null);
+            setPressureData(data7?.length > 0 ? parseFloat(data7[0].Calculated_Reading) : null);
+              
         };
 
         fetchData();
@@ -284,8 +285,8 @@ const Dashboard = () => {
         return (
             <LiquidFillGauge
                 style={{ margin: "0 auto" }}
-                width={200}
-                height={200}
+                width={300}
+                height={300}
                 value={value}
                 percent="%"
                 textSize={1}
@@ -383,148 +384,117 @@ const Dashboard = () => {
         );
     }
 
+
     return (
-        <div className="w-full min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] flex flex-col md:flex-row overflow-y-auto">
-            {/* Main Sensor Grid */}
-            <div className="flex-grow h-full p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-                {/* Fresh Water Section */}
-                <div className="bg-slate-100 shadow-sm rounded-md p-2 flex flex-col flex-grow items-center">
-                    <h2 className="text-center text-xl font-semibold font-mono">Fresh Water</h2>
-                    {renderLiquidGauge(waterLevel, "blue")}
-                    <div className="w-full mt-4">
-                        <h3 className="text-md font-semibold font-mono">Fresh Water Scatter Plot</h3>
-                        <div className="bg-slate-300 shadow-sm rounded-md p-2">
-                            {renderFreshWaterScatterPlot()}
-                        </div>
-                    </div>
+        <div className="w-full min-h-screen flex flex-col md:flex-row overflow-hidden">
+          {/* Main Sensor Grid */}
+          <div className="flex-grow p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Fresh Water Section */}
+            <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
+              <h2 className="text-center text-xl font-semibold font-mono">Fresh Water</h2>
+              {renderLiquidGauge(waterLevel, "blue")}
+              
+              <div className="w-full mt-4">
+                <h3 className="text-md font-semibold font-mono">Fresh Water Scatter Plot</h3>
+                <div className="bg-slate-300 shadow-md rounded-md p-3">
+                  {renderFreshWaterScatterPlot()}
                 </div>
+              </div>
+            </div>
+      
+            {/* Grey Water Section */}
+            <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
+              <h2 className="text-center text-xl font-semibold font-mono">Grey Water</h2>
+              {renderLiquidGauge(predictedWaterLevel, "grey")}
+              
+              <div className="w-full mt-4">
+                <h3 className="text-md font-semibold font-mono">Grey Water Scatter Plot</h3>
+                <div className="bg-slate-300 shadow-md rounded-md p-3">
+                  {renderGreyWaterScatterPlot()}
+                </div>
+              </div>
+            </div>
+      
+          </div>
+      
+          {/* Weather Plug-in Section */}
+<div className="w-full md:w-1/6 h-full flex items-center justify-center">
+  <div className="w-full max-w-md bg-slate-100 shadow-lg p-6 rounded-lg flex flex-col overflow-y-auto">
+    <h2 className="text-center text-xl font-semibold font-mono">Weather</h2>
 
-                {/* Grey Water Section */}
-                <div className="bg-slate-100 shadow-sm rounded-md p-2 flex flex-col items-center">
-                    <h2 className="text-center text-xl font-semibold font-mono">Grey Water</h2>
-                    {renderLiquidGauge(predictedWaterLevel, "grey")}
-                    <div className="w-full mt-4">
-                        <h3 className="text-md font-semibold font-mono">Grey Water Scatter Plot</h3>
-                        <div className="bg-slate-300 shadow-sm rounded-md p-2">
-                            {renderGreyWaterScatterPlot()}
-                        </div>
-                    </div>
-                </div>
-                
+    <div className="w-full h-screen mt-4 bg-gray-300 p-4 rounded-lg shadow-md flex flex-col items-center text-center justify-center flew-grow">
+      {weather ? (
+        <div className="flex flex-col flew-grow items-center space-y-4">
+          
+          {/* Daily Weather */}
+          <div className="flex flex-col items-center">
+            <strong className="text-lg">Daily:</strong>
+            <Image
+              src={getWeatherImage(weather.weathercode)}
+              width={50}
+              height={50}
+              className="mb-2"
+              alt="Weather Condition"
+            />
+            <p>{getWeatherDescription(weather.weathercode)}</p>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/9040596_sunrise_icon.svg"} width={30} height={30} alt="Sunrise" />
+              <p>Sunrise: {formatTimeToNazareth(weather.sunrise)}</p>
             </div>
 
-            {/* Weather Plug-in Section */}
-            <div className="w-full md:w-1/5 md:h-[calc(100vh-50px)] p-2 bg-slate-100 shadow-sm rounded-none flex-grow flex-col overflow-y-auto">
-                <h2 className="text-center text-xl flew-grow font-semibold font-mono">Weather</h2>
-                <div className="w-full h-full mt-4 bg-gray-300 p-2 flex flex-col flew-grow items-center justify-evenly text-center overflow-y-auto">
-                    {weather ? (
-                        <div className="flex flex-col items-center flew-grow overflow-y-auto">
-                            <div className="flex flex-col items-center">
-                                <strong>Daily:</strong>
-                                <Image
-                                    src={getWeatherImage(weather.weathercode)}
-                                    width={40}
-                                    height={40}
-                                    className="object-contain mb-4 mx-auto"
-                                    alt="Weather Condition"
-                                />
-                                <p className="flex flex-col items-center">{getWeatherDescription(weather.weathercode)}</p>
-
-                                <Image
-                                    src={"/Weather_Images/9040596_sunrise_icon.svg"}
-                                    width={40}
-                                    height={40}
-                                    className="object-contain mb-4 mx-auto"
-                                    alt="Sunrise"
-                                />
-                                <p>Sunrise: {formatTimeToNazareth(weather.sunrise)}</p>
-
-                                <Image
-                                    src={"/Weather_Images/8666700_sunset_icon.svg"}
-                                    width={40}
-                                    height={40}
-                                    className="object-contain mb-4 mx-auto"
-                                    alt="Sunset"
-                                />
-                                <p>Sunset: {formatTimeToNazareth(weather.sunset)}</p>
-
-                                <Image
-                                    src={"/Weather_Images/727683_rain_water_cloud_drop_forecast_icon.svg"}
-                                    width={40}
-                                    height={40}
-                                    className="object-contain mb-4 mx-auto"
-                                    alt="Precipitation"
-                                />
-                                <p>Precipitation: {weather.precipitation_probability_max}%</p>
-                            </div>
-
-                            <div className="flex flex-col items-center">
-                                <strong>Current:</strong>
-
-                                <p className="flex flex-col items-center">
-                                    <Image
-                                        src={"/Weather_Images/8665892_temperature_half_icon.svg"}
-                                        width={25}
-                                        height={25}
-                                        className="object-contain mb-2 mx-auto"
-                                        alt="Temperature"
-                                    />
-                                    Temperature: {TempData ? celsiusToFahrenheit(TempData).toFixed(2) : "Loading..."} °F
-                                </p>
-
-                                <p className="flex flex-col items-center">
-                                    <Image
-                                        src={"/Weather_Images/9024034_wind_fill_icon.svg"}
-                                        width={40}
-                                        height={40}
-                                        className="object-contain mb-2 mx-auto"
-                                        alt="Wind Speed"
-                                    />
-                                    Wind Speed: {WSData ? kphToMph(WSData).toFixed(2) : "Loading..."} mph
-                                </p>
-
-                                <p className="flex flex-col items-center">
-                                    <Image
-                                        src={"/Weather_Images/8875188_wind_direction_arrow_icon.svg"}
-                                        width={40}
-                                        height={40}
-                                        className="object-contain mb-2 mx-auto"
-                                        alt="Wind Direction"
-                                    />
-                                    Wind Direction: {WDData ? convertWindDirection(WDData) : "Loading..."}
-                                </p>
-
-                                <p className="flex flex-col items-center">
-                                    <Image
-                                        src={"/Weather_Images/9132537_humidity_air conditining_ac_conditioner_split ac_icon.svg"}
-                                        width={40}
-                                        height={40}
-                                        className="object-contain mb-2 mx-auto"
-                                        alt="Humidity"
-                                    />
-                                    Humidity: {HumdityData ? HumdityData.toFixed(2) : "Loading..."}
-                                </p>
-
-                                <p className="flex flex-col items-center">
-                                    <Image
-                                        src={"/Weather_Images/809411_gauge_indication_indicator_miscellaneous_pressure_icon.svg"}
-                                        width={30}
-                                        height={30}
-                                        className="object-contain mb-2 mx-auto"
-                                        alt="Pressure"
-                                    />
-                                    Pressure: {PressureData ? PressureData.toFixed(2) : "Loading..."}
-                                </p>
-                            </div>
-                        </div>
-                    ) : (
-                        "Loading weather..."
-                    )}
-                </div>
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/8666700_sunset_icon.svg"} width={30} height={30} alt="Sunset" />
+              <p>Sunset: {formatTimeToNazareth(weather.sunset)}</p>
             </div>
 
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/727683_rain_water_cloud_drop_forecast_icon.svg"} width={30} height={30} alt="Precipitation" />
+              <p>Precipitation: {weather.precipitation_probability_max}%</p>
+            </div>
+          </div>
+
+          {/* Current Weather */}
+          <div className="flex flex-col items-center">
+            <strong className="text-lg">Current:</strong>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/8665892_temperature_half_icon.svg"} width={25} height={25} alt="Temperature" />
+              <p>Temperature: {TempData ? celsiusToFahrenheit(TempData).toFixed(2) : "Loading..."} °F</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/9024034_wind_fill_icon.svg"} width={30} height={30} alt="Wind Speed" />
+              <p>Wind Speed: {WSData ? kphToMph(WSData).toFixed(2) : "Loading..."} mph</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/8875188_wind_direction_arrow_icon.svg"} width={30} height={30} alt="Wind Direction" />
+              <p>Wind Direction: {WDData ? convertWindDirection(WDData) : "Loading..."}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/9132537_humidity_air conditining_ac_conditioner_split ac_icon.svg"} width={30} height={30} alt="Humidity" />
+              <p>Humidity: {HumdityData ? HumdityData.toFixed(2) : "Loading..."}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/809411_gauge_indication_indicator_miscellaneous_pressure_icon.svg"} width={30} height={30} alt="Pressure" />
+              <p>Pressure: {PressureData ? PressureData.toFixed(2) : "Loading..."}</p>
+            </div>
+          </div>
         </div>
-    );
+      ) : (
+        "Loading weather..."
+      )}
+    </div>
+  </div>
+</div>
+
+          </div>
+      );
+      
 };
 
 export default Dashboard;
