@@ -11,8 +11,6 @@ const HealthPage = () => {
     type DataSet = {
         dates: Array<Date>;
         values: Array<number>;
-        days: Array<Date>;
-        hours: Array<Date>;
     }
 
     type DataSetAll = Array<{
@@ -31,10 +29,40 @@ const HealthPage = () => {
     // // States of the datasets
     const [dataset, setDataset] = useState<DataSet>({
         dates: [],
-        values: [],
-        days: [],
-        hours: [],
+        values: []
     });
+
+    const [playaDataset, setPlayaDataset] = useState<DataSet>({
+        dates: [],
+        values: []
+    });
+
+
+    const [fresh1Dataset, setFresh1Dataset] = useState<DataSet>({
+        dates: [],
+        values: []
+    });
+
+
+
+    const [fresh2Dataset, setFresh2Dataset] = useState<DataSet>({
+        dates: [],
+        values: []
+    });
+
+
+
+    const [fresh3Dataset, setFresh3Dataset] = useState<DataSet>({
+        dates: [],
+        values: []
+    });
+
+
+    const [greyDataset, setGreyDataset] = useState<DataSet>({
+        dates: [],
+        values: []
+    });
+
 
     const [datasetAll, setDatasetAll] = useState<DataSetAll>([]);
     const [ratePlaya, setRatePlaya] = useState<number>(0);
@@ -55,6 +83,17 @@ const HealthPage = () => {
     const fresh3ID = "0xa8610a3436268316";
     const greyID = "0xa8610a3436268316";
 
+
+    function processData(rate: Array<{ Hourly_Timestamp: string; Number_Reading: number }>) {
+
+        const values = rate.map((data: { Number_Reading: number }) => data.Number_Reading);
+
+        const dates = rate.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp));
+
+
+
+        return ({ dates, values })
+    }
 
     // // This is where the website will react to changes the user makes. Ie. a different sensor is selected
     useEffect(() => {
@@ -88,6 +127,7 @@ const HealthPage = () => {
                 // ]);
 
                 const [monthlyRate, healthPlayaResponse, healthFresh1Response, healthFresh2Response, healthFresh3Response, healthGreyResponse,
+                    historyPlayaResponse, historyFresh1Response, historyFresh2Response, historyFresh3Response, historyGreyResponse
                 ] = await Promise.all([
 
                     fetch(`/api/rate/720`),
@@ -97,9 +137,21 @@ const HealthPage = () => {
                     fetch(`/api/rate/health/${fresh2ID}`),  //Fresh Water Tank 3
                     fetch(`/api/rate/health/${fresh3ID}`),  //Fresh Water Tank 3
                     fetch(`/api/rate/health/${greyID}`),  //Grey Water Tank 
+
+                    fetch(`/api/rate/history/${playaID}`), //Playa Weather Station
+                    fetch(`/api/rate/history/${fresh1ID}`),  //Fresh Water Tank 1
+                    fetch(`/api/rate/history/${fresh2ID}`),  //Fresh Water Tank 3
+                    fetch(`/api/rate/history/${fresh3ID}`),  //Fresh Water Tank 3
+                    fetch(`/api/rate/history/${greyID}`),  //Grey Water Tank 
                 ]);
 
                 const rate = await monthlyRate.json();
+
+                const playaRate = await historyPlayaResponse.json();
+                const fresh1Rate = await historyFresh1Response.json();
+                const fresh2Rate = await historyFresh2Response.json();
+                const fresh3Rate = await historyFresh3Response.json();
+                const greyRate = await historyGreyResponse.json();
 
                 const healthPlayaData = await healthPlayaResponse.json();
                 console.log(healthPlayaData);
@@ -171,30 +223,15 @@ const HealthPage = () => {
                     })
                 });
 
-                const hours = rate.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    timeZone: "America/Chicago"
-                }));
 
-                const values = rate.map((data: { Number_Reading: number }) => data.Number_Reading);
+                setDataset(processData(rate));
 
+                setPlayaDataset(processData(playaRate));
+                setFresh1Dataset(processData(fresh1Rate));
+                setFresh2Dataset(processData(fresh2Rate));
+                setFresh3Dataset(processData(fresh3Rate));
+                setGreyDataset(processData(greyRate));
 
-                const days = rate.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp).toLocaleDateString("en-US", {
-                    dateStyle: "short",
-                    timeZone: "America/Chicago"
-                }));
-
-                const dates = rate.map((data: { Hourly_Timestamp: string }) => new Date(data.Hourly_Timestamp));
-
-
-
-                setDataset({
-                    dates: dates,
-                    values: values,
-                    days: days,
-                    hours: hours,
-                });
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -232,7 +269,7 @@ const HealthPage = () => {
 
 
     return (
-        <div className="w-full min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] grid gap-2 p-2 grid-rows-2 lg:grid-cols-5 lg:grid-rows-3 md:grid-cols-3 grid-cols-1">
+        <div className="w-full min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] grid gap-2 p-2 lg:grid-cols-5 lg:grid-rows-3 grid-cols-1">
 
             {/* Data Rate */}
             <div className="p-4 lg:h-full md:h-[calc(100vh-50px)] md:row-span-3 bg-slate-100 shadow-sm rounded-md flex-grow lg:block hidden">
@@ -283,6 +320,7 @@ const HealthPage = () => {
                             useResizeHandler
                             style={{ width: "100%", height: "200px" }}
                         />
+
                         <div className="text-center text-lg gap-5 p-10">
                             <p className={`${onlinePlaya === null ? "text-gray-500" : onlinePlaya.online ? "text-green-900" : "text-red-900"}`}>
                                 Playa Weather Station: {onlinePlaya === null ? "LOADING..." : onlinePlaya.online ? "ONLINE ✅" : "OFFLINE ❌"}
@@ -291,6 +329,26 @@ const HealthPage = () => {
                                 Last Reading: {onlinePlaya === null ? "LOADING..." : onlinePlaya.last_reading}
                             </p>
                         </div>
+                        <PlotlyComponent
+                            data={[{ x: playaDataset.dates, y: playaDataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
+                            layout={{
+                                autosize: true,
+                                margin: { t: 20, l: 20, r: 20, b: 20 },
+                                xaxis: { automargin: true,  tickformat: '%m/%d %I:%M %p' },
+                                yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: "Transmission Rate" },
+                                paper_bgcolor: '#f1f5f9',
+                                plot_bgcolor: '#f1f5f9',
+                                showlegend: false,
+                                legend: {
+                                    x: 1,
+                                    xanchor: 'right',
+                                    y: 1
+                                }
+                            }}
+                            config={{ displayModeBar: false, scrollZoom: false, responsive: true }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "150px" }}
+                        />
                     </div>
 
                 </div>
@@ -298,7 +356,7 @@ const HealthPage = () => {
                 {/* Fresh Water Tank 1*/}
                 <div className="h-full bg-slate-100 md:col-span-2 shadow-sm rounded-md">
                     <div className="p-3">
-                        <h1 className="text-center text-xl font-semibold font-mono">Fresh Water Tank 1</h1>
+                        <h1 className="text-center text-xl font-semibold font-mono">Fresh Water Tank 2</h1>
                         <PlotlyComponent
                             data={[
                                 {
@@ -330,12 +388,32 @@ const HealthPage = () => {
                         />
                         <div className="text-center text-lg gap-5 p-10">
                             <p className={`${onlineFresh1 === null ? "text-gray-500" : onlineFresh1.online ? "text-green-900" : "text-red-900"}`}>
-                                Fresh Water Tank 1: {onlineFresh1 === null ? "LOADING..." : onlineFresh1.online ? "ONLINE ✅" : "OFFLINE ❌"}
+                                Fresh Water Tank 2: {onlineFresh1 === null ? "LOADING..." : onlineFresh1.online ? "ONLINE ✅" : "OFFLINE ❌"}
                             </p>
                             <p className={`${onlineFresh1 === null ? "text-gray-500" : onlineFresh1.online ? "text-green-900" : "text-red-900"}`}>
                                 Last Reading: {onlineFresh1 === null ? "LOADING..." : onlineFresh1.last_reading}
                             </p>
                         </div>
+                        <PlotlyComponent
+                            data={[{ x: fresh1Dataset.dates, y: fresh1Dataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
+                            layout={{
+                                autosize: true,
+                                margin: { t: 20, l: 20, r: 20, b: 20 },
+                                xaxis: { automargin: true,  tickformat: '%m/%d %I:%M %p' },
+                                yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: "Transmission Rate" },
+                                paper_bgcolor: '#f1f5f9',
+                                plot_bgcolor: '#f1f5f9',
+                                showlegend: false,
+                                legend: {
+                                    x: 1,
+                                    xanchor: 'right',
+                                    y: 1
+                                }
+                            }}
+                            config={{ displayModeBar: false, scrollZoom: false, responsive: true }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "150px" }}
+                        />
                     </div>
                 </div>
                 {/* Fresh Water Tank 2*/}
@@ -379,6 +457,26 @@ const HealthPage = () => {
                                 Last Reading: {onlineFresh2 === null ? "LOADING..." : onlineFresh2.last_reading}
                             </p>
                         </div>
+                        <PlotlyComponent
+                            data={[{ x: fresh2Dataset.dates, y: fresh2Dataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
+                            layout={{
+                                autosize: true,
+                                margin: { t: 20, l: 20, r: 20, b: 20 },
+                                xaxis: { automargin: true,  tickformat: '%m/%d %I:%M %p' },
+                                yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: "Transmission Rate" },
+                                paper_bgcolor: '#f1f5f9',
+                                plot_bgcolor: '#f1f5f9',
+                                showlegend: false,
+                                legend: {
+                                    x: 1,
+                                    xanchor: 'right',
+                                    y: 1
+                                }
+                            }}
+                            config={{ displayModeBar: false, scrollZoom: false, responsive: true }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "150px" }}
+                        />
                     </div>
                 </div>
                 {/* Fresh Water Tank 3*/}
@@ -422,6 +520,26 @@ const HealthPage = () => {
                                 Last Reading: {onlineFresh3 === null ? "LOADING..." : onlineFresh3.last_reading}
                             </p>
                         </div>
+                        <PlotlyComponent
+                            data={[{ x: fresh3Dataset.dates, y: fresh3Dataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
+                            layout={{
+                                autosize: true,
+                                margin: { t: 20, l: 20, r: 20, b: 20 },
+                                xaxis: { automargin: true,  tickformat: '%m/%d %I:%M %p' },
+                                yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: "Transmission Rate" },
+                                paper_bgcolor: '#f1f5f9',
+                                plot_bgcolor: '#f1f5f9',
+                                showlegend: false,
+                                legend: {
+                                    x: 1,
+                                    xanchor: 'right',
+                                    y: 1
+                                }
+                            }}
+                            config={{ displayModeBar: false, scrollZoom: false, responsive: true }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "150px" }}
+                        />
                     </div>
                 </div>
                 {/* Grey Water Tank */}
@@ -465,48 +583,64 @@ const HealthPage = () => {
                                 Last Reading: {onlineGrey === null ? "LOADING..." : onlineGrey.last_reading}
                             </p>
                         </div>
+                        <PlotlyComponent
+                            data={[{ x: greyDataset.dates, y: greyDataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
+                            layout={{
+                                autosize: true,
+                                margin: { t: 20, l: 20, r: 20, b: 20 },
+                                xaxis: { automargin: true,  tickformat: '%m/%d %I:%M %p' },
+                                yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: "Transmission Rate" },
+                                paper_bgcolor: '#f1f5f9',
+                                plot_bgcolor: '#f1f5f9',
+                                showlegend: false,
+                                legend: {
+                                    x: 1,
+                                    xanchor: 'right',
+                                    y: 1
+                                }
+                            }}
+                            config={{ displayModeBar: false, scrollZoom: false, responsive: true }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "150px" }}
+                        />
                     </div>
                 </div>
             </div>
             {/* Transmission Rate */}
-            <div className="p-4 lg:h-full lg:col-span-4 md:col-span-1 bg-slate-100 shadow-sm rounded-md flex flex-col">
+            <div className="p-4 h-full lg:col-span-4 col-span-1 row-span-1 bg-slate-100 shadow-sm rounded-md flex flex-col">
                 <h1 className="text-center text-xl font-semibold font-mono">Transmission Rate</h1>
-                <div className="flex-grow lg:h-full" style={{ maxHeight: '300px' }}>
+                <div className="w-full h-full">
                     <PlotlyComponent
                         data={[{ x: dataset.dates, y: dataset.values, type: 'scatter', mode: 'lines+markers', name: "Transmissions Per Hour" }]}
                         layout={{
                             autosize: true,
                             margin: { t: 20, l: 20, r: 20, b: 20 },
-                            xaxis: { automargin: true },
+                            xaxis: { automargin: true,  tickformat: '%m/%d %I:%M %p' },
                             yaxis: { side: "left", anchor: 'x', position: 0, automargin: true, title: "Transmission Rate" },
                             paper_bgcolor: '#f1f5f9',
                             plot_bgcolor: '#f1f5f9',
                             showlegend: false,
-                            legend: {
-                                x: 1,
-                                xanchor: 'right',
-                                y: 1
-                            }
+                            legend: { x: 1, xanchor: 'right', y: 1 }
                         }}
                         config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
                         useResizeHandler={true}
-                        style={{ width: "100%", height: "100%" }}
+                        style={{ width: "100%", height: "200px" }}
                     />
                 </div>
             </div>
             {/* Data Rate */}
-            <div className="p-4 lg:h-full md:h-[calc(100vh-50px)] md:row-span-2 bg-slate-100 shadow-sm rounded-md flex-grow block lg:hidden">
+            <div className="p-4 lg:h-full md:h-[calc(100vh-50px)] md:row-span-2 row-span-1 bg-slate-100 shadow-sm rounded-md flex-grow block lg:hidden">
                 <h1 className="text-center text-xl font-semibold font-mono">Sensor List</h1>
                 <div className="md:overflow-scroll" style={{ maxHeight: '95%' }}>
-                     {datasetAll.length > 0 ? (datasetAll.map((data, index) => (
+                    {datasetAll.length > 0 ? (datasetAll.map((data, index) => (
                         <div key={index} className={`p-2 border-b border-gray-200 ${data.Online ? "bg-green-300" : "bg-red-300"}`}>
                             <p>Sensor: {data.Sensor_Description}</p>
                             <p>Board: {data.Board_Description}</p>
                             <p>Total Readings Received: {data.Count}</p>
                         </div>
                     ))) : (<p className="text-center text-lg gap-5 p-10 text-gray-500 "> LOADING... </p>)
-                    } 
-                    
+                    }
+
                 </div>
 
             </div>

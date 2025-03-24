@@ -10,6 +10,7 @@ const PlotlyComponent = dynamic(() => import("react-plotly.js"), { ssr: false })
 import LiquidFillGauge from "react-liquid-gauge";
 import { color } from "d3-color";
 import { interpolateRgb } from "d3-interpolate";
+import Image from "next/image";
 
 // Match your actual server fields: "Hourly_Timestamp" & "Sensor_Value"
 interface SensorReading {
@@ -295,27 +296,12 @@ const Tank1: NextPage = () => {
         <section className="bg-slate-100 shadow-sm rounded-md p-2 md:col-span-2 h-full">
           <h2 className="text-center text-xl font-semibold font-mono">Historical Data</h2>
           <div className="flex-grow h-full min-h-[400px]">
-            <PlotlyComponent
-              data={[
-                {
-                  x: ["Jan", "Feb", "Mar"],
-                  y: [65, 66, 67],
-                  type: "scatter",
-                  mode: "lines+markers",
-                  marker: { color: "red" },
-                },
-              ]}
-              layout={{
-                autosize: true,
-                title: "Historical Water Temperature",
-                margin: { t: 30, r: 10, l: 40, b: 30 },
-                paper_bgcolor: '#f1f5f9',
-                plot_bgcolor: '#f1f5f9',
-              }}
-              config={{ displayModeBar: false, scrollZoom: true, responsive: true }}
-              useResizeHandler={true}
-              style={{ width: "100%", height: "100%" }}
-
+            <Image
+              src="/Tank_Images/fw1.png"
+              alt=""
+              width={500}
+              height={300}
+              className="rounded-md shadow-md"
             />
           </div>
         </section>

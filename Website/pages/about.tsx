@@ -1,11 +1,5 @@
-// import dynamic from "next/dynamic";
-// import { useEffect, useState } from "react";
-// import LiquidFillGauge from "react-liquid-gauge";
-// import { color } from "d3-color";
-// import { interpolateRgb } from "d3-interpolate";
 import Image from "next/image";
 
-// export const PlotlyComponent = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const About = () => {
 

@@ -23,6 +23,7 @@ export default async function handler(
             MAX(r.Sensor_Timestamp) AS LastTimestamp,
             SUM(CASE WHEN r.Sensor_Timestamp >= NOW() - INTERVAL 1 HOUR THEN 1 ELSE 0 END) AS Number_Reading,
             MAX(CASE WHEN r.Sensor_Timestamp > NOW() - INTERVAL 5 MINUTE THEN 1 ELSE 0 END) AS Online
+            
         FROM
             Readings r
         WHERE

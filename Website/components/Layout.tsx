@@ -41,8 +41,10 @@ export default function RootLayout({
 
     const menuItems = [
         { name: "Home", link: "/" },
-        { name: "Freshwater Tank", link: "/tank1" },
-        { name: "Greywater Tank", link: "/tank2" },
+        { name: "Freshwater Tank 1", link: "/tank1" },
+        { name: "Freshwater Tank 2", link: "/tank2" },
+        { name: "Freshwater Tank 3", link: "/tank3" },
+        { name: "Greywater Tank", link: "/tank4" },
         { name: "Weather Conditions", link: "/weather" },
         { name: "Reports", link: "/reports" },
         { name: "System Health", link: "/system-health" },
@@ -76,8 +78,8 @@ export default function RootLayout({
                     </NavbarBrand>
                     {/* Disclaimer as a NavbarItem */}
                     <NavbarItem className="text-red-500 font-semibold text-center flew flew-grow">
-                        <span>
-                            ⚠️ This system is in testing. 
+                        <span className="gap-4 p-4">
+                            ⚠️ This system is in testing. {' '}
                             <br className="sm:hidden" />
                             Data may not be accurate.
                         </span>
