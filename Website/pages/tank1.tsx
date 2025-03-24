@@ -103,8 +103,8 @@ const Tank1: NextPage = () => {
     return (
       <LiquidFillGauge
         style={{ margin: "0 auto" }}
-        width={200}
-        height={200}
+        width={150}
+        height={150}
         value={value}
         percent="%"
         textSize={1}
@@ -174,140 +174,132 @@ const Tank1: NextPage = () => {
         }}
         config={{ displayModeBar: false, responsive: true }}
         useResizeHandler
-        style={{ width: "100%", height: "200px" }}
+        style={{ width: "100%", height: "150px" }}
       />
     );
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] gap-2">
-      {/* <Head>
-        <title>TerraTek</title>
-        <meta name="description" content="Tank Dashboard UI" />
-      </Head> */}
 
-
-      <div className=" w-full h-full grid grid-cols-1 p-2 md:grid-cols-2 gap-2 items-start auto-rows-min">
-        {/* Current Section */}
-        <section className="bg-slate-100 shadow-sm rounded-md p-2">
-          <h2 className="text-center text-xl font-semibold font-mono">
-            Current Freshwater Tank
-          </h2>
-          <div className="grid grid-cols-2 gap-2">
-            {/* Water Level (liquid gauge) */}
-            <div className="flex flex-col items-center justify-center bg-slate-100 p-2 rounded">
-              {renderLiquidGauge(waterLevel)}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>Water Level</strong>: {waterLevel}%
-              </span>
-            </div>
-
-            {/* Water pH */}
-            <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
-              {pHData ? (
-                renderGauge(currentPH, "", [0, 14], "blue")
-              ) : (
-                <p>Loading pH...</p>
-              )}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>Water pH</strong>
-              </span>
-            </div>
-
-            {/* TDC */}
-            <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
-              {tdcData ? (
-                renderGauge(currentTDC, "", [0, 500], "green")
-              ) : (
-                <p>Loading TDC...</p>
-              )}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>TDC</strong>
-              </span>
-            </div>
-
-            {/* Temperature */}
-            <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
-              {waterTempData ? (
-                renderGauge(currentTempF, "", [0, 212], "red")
-              ) : (
-                <p>Loading Temperature...</p>
-              )}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>Water Temperature</strong>
-              </span>
-            </div>
+    <div className="w-full min-h-[calc(100vh-50px)] lg:h-[calc(100vh-50px)] grid grid-cols-1 p-2 md:grid-cols-2 gap-2">
+      {/* Current Section */}
+      <div className="bg-slate-100 shadow-sm rounded-md p-2">
+        <h2 className="text-center text-xl font-semibold font-mono">
+          Current Freshwater Tank 1
+        </h2>
+        <div className="grid grid-cols-2 gap-2">
+          {/* Water Level (liquid gauge) */}
+          <div className="flex flex-col items-center justify-center bg-slate-100 p-2 rounded">
+            {renderLiquidGauge(waterLevel)}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>Water Level</strong>: {waterLevel}%
+            </span>
           </div>
-        </section>
 
-        {/* Predicted Section */}
-        <section className="bg-slate-100 shadow-sm rounded-md p-2">
-          <h2 className="text-center text-xl font-semibold font-mono">
-            Historical Freshwater Tank
-          </h2>
-          <div className="grid grid-cols-2 gap-2">
-            {/* Predicted Water Level */}
-            <div className="flex flex-col items-center bg-slate-100 justify-center p-2 rounded">
-              {renderLiquidGauge(predictedWaterLevel)}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>Water Level (Predicted)</strong>
-              </span>
-            </div>
-
-            {/* Predicted pH */}
-            <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
-              {pHData ? (
-                renderGauge(predictedPH, "", [0, 14], "blue")
-              ) : (
-                <p>Loading pH...</p>
-              )}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>Water pH</strong>
-              </span>
-            </div>
-
-            {/* Predicted TDC */}
-            <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
-              {tdcData ? (
-                renderGauge(predictedTDC, "", [0, 500], "green")
-              ) : (
-                <p>Loading TDC...</p>
-              )}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>TDC</strong>
-              </span>
-            </div>
-
-            {/* Predicted Temperature */}
-            <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
-              {waterTempData ? (
-                renderGauge(predictedTempF, "", [0, 212], "red")
-              ) : (
-                <p>Loading Temperature...</p>
-              )}
-              <span className="text-center text-md font-semibold font-mono">
-                <strong>Water Temperature</strong>
-              </span>
-            </div>
+          {/* Water pH */}
+          <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
+            {pHData ? (
+              renderGauge(currentPH, "", [0, 14], "blue")
+            ) : (
+              <p>Loading pH...</p>
+            )}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>Water pH</strong>
+            </span>
           </div>
-        </section>
 
-        {/* Historical Data Section (3rd row, spanning 2 columns) */}
-        <section className="bg-slate-100 shadow-sm rounded-md p-2 md:col-span-2 h-full">
-          <h2 className="text-center text-xl font-semibold font-mono">Historical Data</h2>
-          <div className="flex-grow h-full min-h-[400px]">
-            <Image
-              src="/Tank_Images/fw1.png"
-              alt=""
-              width={500}
-              height={300}
-              className="rounded-md shadow-md"
-            />
+          {/* TDC */}
+          <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
+            {tdcData ? (
+              renderGauge(currentTDC, "", [0, 500], "green")
+            ) : (
+              <p>Loading TDC...</p>
+            )}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>TDC</strong>
+            </span>
           </div>
-        </section>
 
+          {/* Temperature */}
+          <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
+            {waterTempData ? (
+              renderGauge(currentTempF, "", [0, 212], "red")
+            ) : (
+              <p>Loading Temperature...</p>
+            )}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>Water Temperature</strong>
+            </span>
+          </div>
+        </div>
       </div>
-    </div >
+
+      {/* Predicted Section */}
+      <div className="bg-slate-100 shadow-sm rounded-md p-2">
+        <h2 className="text-center text-xl font-semibold font-mono">
+          Historical Freshwater Tank 1
+        </h2>
+        <div className="grid grid-cols-2 gap-2">
+          {/* Predicted Water Level */}
+          <div className="flex flex-col items-center bg-slate-100 justify-center p-2 rounded">
+            {renderLiquidGauge(predictedWaterLevel)}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>Water Level (Predicted)</strong>
+            </span>
+          </div>
+
+          {/* Predicted pH */}
+          <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
+            {pHData ? (
+              renderGauge(predictedPH, "", [0, 14], "blue")
+            ) : (
+              <p>Loading pH...</p>
+            )}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>Water pH</strong>
+            </span>
+          </div>
+
+          {/* Predicted TDC */}
+          <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
+            {tdcData ? (
+              renderGauge(predictedTDC, "", [0, 500], "green")
+            ) : (
+              <p>Loading TDC...</p>
+            )}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>TDC</strong>
+            </span>
+          </div>
+
+          {/* Predicted Temperature */}
+          <div className="flex flex-col items-center bg-slate-100 p-2 rounded">
+            {waterTempData ? (
+              renderGauge(predictedTempF, "", [0, 212], "red")
+            ) : (
+              <p>Loading Temperature...</p>
+            )}
+            <span className="text-center text-md font-semibold font-mono">
+              <strong>Water Temperature</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Historical Data Section (3rd row, spanning 2 columns) */}
+      <div className="bg-slate-100 shadow-sm rounded-md p-2 md:col-span-2 h-full flex flex-col">
+        <h2 className="text-center text-xl font-semibold font-mono">Tank Location</h2>
+        <div className="relative h-96 w-full justify-center items-center">
+          <Image
+            src="/Tank_Images/fw1.png"
+            alt="Tank Location"
+            fill
+            style={{ objectFit: "contain" }}
+          />
+        </div>
+      </div>
+    </div>
+
 
   );
 };
