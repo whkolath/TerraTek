@@ -79,9 +79,9 @@ const HealthPage = () => {
 
     const playaID = "0xa8610a34362d800f";
     const fresh1ID = "0xa8610a3436268316";
-    const fresh2ID = "0xa8610a3436268316";
-    const fresh3ID = "0xa8610a3436268316";
-    const greyID = "0xa8610a3436268316";
+    const fresh2ID = "0xa8610a33382d9411";
+    const fresh3ID = "0xa8610a3339188011";
+    const greyID = "0xa8610a33383b9411";
 
 
     function processData(rate: Array<{ Hourly_Timestamp: string; Number_Reading: number }>) {
@@ -356,7 +356,7 @@ const HealthPage = () => {
                 {/* Fresh Water Tank 1*/}
                 <div className="h-full bg-slate-100 md:col-span-2 shadow-sm rounded-md">
                     <div className="p-3">
-                        <h1 className="text-center text-xl font-semibold font-mono">Fresh Water Tank 2</h1>
+                        <h1 className="text-center text-xl font-semibold font-mono">Fresh Water Tank 1</h1>
                         <PlotlyComponent
                             data={[
                                 {
@@ -388,7 +388,7 @@ const HealthPage = () => {
                         />
                         <div className="text-center text-lg gap-5 p-10">
                             <p className={`${onlineFresh1 === null ? "text-gray-500" : onlineFresh1.online ? "text-green-900" : "text-red-900"}`}>
-                                Fresh Water Tank 2: {onlineFresh1 === null ? "LOADING..." : onlineFresh1.online ? "ONLINE ✅" : "OFFLINE ❌"}
+                                Fresh Water Tank 1: {onlineFresh1 === null ? "LOADING..." : onlineFresh1.online ? "ONLINE ✅" : "OFFLINE ❌"}
                             </p>
                             <p className={`${onlineFresh1 === null ? "text-gray-500" : onlineFresh1.online ? "text-green-900" : "text-red-900"}`}>
                                 Last Reading: {onlineFresh1 === null ? "LOADING..." : onlineFresh1.last_reading}
@@ -428,11 +428,11 @@ const HealthPage = () => {
                                     value: rateFresh2,
                                     gauge: {
                                         bar: { color: "darkGreen" },
-                                        axis: { range: [570, 670] },
+                                        axis: { range: [130, 230] },
                                         steps: [
-                                            { range: [570, 600], color: "lightgray" },
-                                            { range: [600, 640], color: "lightGreen" },
-                                            { range: [640, 670], color: "lightgray" }
+                                            { range: [130, 160], color: "lightgray" },
+                                            { range: [160, 200], color: "lightGreen" },
+                                            { range: [200, 230], color: "lightgray" }
                                         ],
 
                                     },
@@ -491,11 +491,11 @@ const HealthPage = () => {
                                     value: rateFresh3,
                                     gauge: {
                                         bar: { color: "darkGreen" },
-                                        axis: { range: [570, 670] },
+                                        axis: { range: [130, 230] },
                                         steps: [
-                                            { range: [570, 600], color: "lightgray" },
-                                            { range: [600, 640], color: "lightGreen" },
-                                            { range: [640, 670], color: "lightgray" }
+                                            { range: [130, 160], color: "lightgray" },
+                                            { range: [160, 200], color: "lightGreen" },
+                                            { range: [200, 230], color: "lightgray" }
                                         ],
 
                                     },
@@ -580,7 +580,8 @@ const HealthPage = () => {
                                 Grey Water Tank: {onlineGrey === null ? "LOADING..." : onlineGrey.online ? "ONLINE ✅" : "OFFLINE ❌"}
                             </p>
                             <p className={`${onlineGrey === null ? "text-gray-500" : onlineGrey.online ? "text-green-900" : "text-red-900"}`}>
-                                Last Reading: {onlineGrey === null ? "LOADING..." : onlineGrey.last_reading}
+                                {/* Last Reading: {onlineGrey === null ? "LOADING..." : onlineGrey.last_reading} */}
+                                Last Reading: NEVER
                             </p>
                         </div>
                         <PlotlyComponent
@@ -642,9 +643,7 @@ const HealthPage = () => {
                     }
 
                 </div>
-
             </div>
-
         </div>
     );
 }

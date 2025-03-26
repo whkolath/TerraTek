@@ -158,7 +158,7 @@ const Reports = () => {
                 setSensorList({
                     Sensor_ID: sensorsData.map((sensorsData: { Sensor_ID: number }) => sensorsData.Sensor_ID),
                     Sensor_Description: sensorsData.map((sensorsData: { Sensor_Description: number }) => sensorsData.Sensor_Description),
-                    Units: sensorsData.map((sensorsData: { Units: number, Sensor_ID: number }) => (unitType && sensorsData.Sensor_ID == 2) ? "°F" : sensorsData.Units)
+                    Units: sensorsData.map((sensorsData: { Units: number, Sensor_ID: number }) => (unitType && (sensorsData.Sensor_ID == 2 || sensorsData.Sensor_ID == 1)) ? "°F" : sensorsData.Units)
                 });
 
                 setBoardList({
@@ -175,7 +175,7 @@ const Reports = () => {
                 let values = data.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
 
                 if (unitType) {
-                    if (sensor == "2") {
+                    if (sensor == "2" || sensor == "1") {
                         values = data.map((data: { Calculated_Reading: number }) => data.Calculated_Reading ? data.Calculated_Reading * 9 / 5 + 32 : null);
                     }
                 }
@@ -192,7 +192,14 @@ const Reports = () => {
                     minute: "numeric",
                     timeZone: "America/Chicago"
                 }));
-                const values2 = data2.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
+                let values2 = data2.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
+
+                if (unitType) {
+                    if (sensor == "2" || sensor == "1") {
+                        values2 = data2.map((data: { Calculated_Reading: number }) => data.Calculated_Reading ? data.Calculated_Reading * 9 / 5 + 32 : null);
+                    }
+                }
+
                 const days2 = data2.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
                     timeZone: "America/Chicago"
@@ -205,7 +212,14 @@ const Reports = () => {
                     minute: "numeric",
                     timeZone: "America/Chicago"
                 }));
-                const values3 = data3.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
+                let values3 = data3.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
+
+                if (unitType) {
+                    if (sensor == "2" || sensor == "1") {
+                        values3 = data3.map((data: { Calculated_Reading: number }) => data.Calculated_Reading ? data.Calculated_Reading * 9 / 5 + 32 : null);
+                    }
+                }
+
                 const days3 = data3.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
                     timeZone: "America/Chicago"
