@@ -13,24 +13,39 @@ const db: mysql.Pool = mysql.createPool({
     connectTimeout: 10000, // 10 seconds
 });
 
+// Conversion functions
+const convertToImperial = (value: number, units: string): number => {
+    switch (units) {
+        case '°C': return (value * 9/5) + 32; // Celsius to Fahrenheit
+        case 'mm': return value * 0.0393701;   // Millimeters to inches
+        case 'kPa': return value * 0.2953;     // Kilopascals to inHg
+        case 'kph': return value * 0.621371;    // Kilometers per hour to Miles per hour
+        case '°': return (value + 180) % 360;    // invert direction
+        default: return value;                // No conversion needed
+    }
+};
+
+
+const convertDefault = (value: number, units: string): number => {
+    switch (units) {
+        case '°': return (value + 180) % 360;    // invert direction
+        default: return value;                   // No conversion needed
+    }
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
     try {
-        const { timeframe, sensor, board, start, end, calc, timeinterval } = req.query;
+        const { timeframe, sensor, board, start, end, calc, timeinterval, unit_conversion } = req.query;
 
-        // Validate that at least one of sensor or board is provided
-        if (!sensor && !board) {
-            return res.status(400).json({ error: 'Either sensor ID or board ID must be provided.' });
-        }
-
-        // Validate sensor ID (if provided)
-        const sensorId = sensor ? parseInt(sensor as string) : null;
-        if (sensor && isNaN(sensorId!)) {
+        // Validate sensor ID
+        const sensorId = parseInt(sensor as string);
+        if (isNaN(sensorId)) {
             return res.status(400).json({ error: 'Invalid sensor ID. Must be a number.' });
         }
 
-        // Validate board ID (if provided)
+        // Validate board ID
         const boardId = board as string;
-        if (board && typeof boardId !== 'string') {
+        if (!boardId || typeof boardId !== 'string') {
             return res.status(400).json({ error: 'Invalid board ID. Must be a string.' });
         }
 
@@ -41,6 +56,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Validate time interval (default: hourly)
         const allowedIntervals = ['halfhour', 'hourly', 'daily'];
         const interval = allowedIntervals.includes(timeinterval as string) ? timeinterval as string : 'hourly';
+
+        // Validate unit conversion (default: 0/imperial)
+        const useImperial = unit_conversion;
+        console.log(useImperial);
 
         // Validate and parse timeframe (default: last 24 hours)
         const range = parseInt(timeframe as string) || 24;
@@ -88,60 +107,91 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 dateFormat = '%Y-%m-%d %H:00:00'; // Default to hourly
         }
 
-        // Construct SQL query based on provided parameters
+        // First query to get sensor units
+        const unitsQuery = `
+            SELECT Units FROM Sensors WHERE Sensor_ID = ?;
+        `;
+        
+        const [unitsResult] = await db.execute<mysql.RowDataPacket[]>(unitsQuery, [sensorId]);
+        if (unitsResult.length === 0) {
+            return res.status(404).json({ error: 'Sensor units not found.' });
+        }
+        const units = unitsResult[0]?.Units || '';
+        
+
+        // Main query to get readings
         let sqlQuery: string;
-        const queryParams: (string | number)[] = [];
-
-        // Base WHERE clause
-        let whereClause = 'WHERE r.Sensor_Timestamp BETWEEN ? AND ?';
-        queryParams.push(startTimeFormatted, endTimeFormatted);
-
-        // Add sensor ID condition (if provided)
-        if (sensorId) {
-            whereClause += ' AND r.Sensor_ID = ?';
-            queryParams.push(sensorId);
-        }
-
-        // Add board ID condition (if provided)
-        if (boardId) {
-            whereClause += ' AND r.Board_ID = ?';
-            queryParams.push(boardId);
-        }
-
-        // Construct the final query
         if (calculationMethod === 'MEDIAN') {
             sqlQuery = `
                 SELECT 
                     DATE_FORMAT(r.Sensor_Timestamp, '${dateFormat}') AS Interval_Timestamp,
-                    SUBSTRING_INDEX(SUBSTRING_INDEX(GROUP_CONCAT(r.Sensor_Value ORDER BY r.Sensor_Value), ',', CEIL(COUNT(*) / 2)), ',', -1) AS Calculated_Reading,
-                    r.Sensor_ID,
-                    r.Board_ID
+                    SUBSTRING_INDEX(SUBSTRING_INDEX(GROUP_CONCAT(r.Sensor_Value ORDER BY r.Sensor_Value), ',', CEIL(COUNT(*) / 2)), ',', -1) AS Calculated_Reading
                 FROM Readings r
-                ${whereClause}
-                GROUP BY Interval_Timestamp, r.Sensor_ID, r.Board_ID
+                WHERE r.Sensor_ID = ?
+                  AND r.Board_ID = ?
+                  AND r.Sensor_Timestamp BETWEEN ? AND ?
+                GROUP BY Interval_Timestamp
                 ORDER BY Interval_Timestamp DESC;
             `;
         } else {
             sqlQuery = `
                 SELECT 
                     DATE_FORMAT(r.Sensor_Timestamp, '${dateFormat}') AS Interval_Timestamp,
-                    ${calculationMethod}(r.Sensor_Value) AS Calculated_Reading,
-                    r.Sensor_ID,
-                    r.Board_ID
+                    ${calculationMethod}(r.Sensor_Value) AS Calculated_Reading
                 FROM Readings r
-                ${whereClause}
-                GROUP BY Interval_Timestamp, r.Sensor_ID, r.Board_ID
+                WHERE r.Sensor_ID = ?
+                  AND r.Board_ID = ?
+                  AND r.Sensor_Timestamp BETWEEN ? AND ?
+                GROUP BY Interval_Timestamp
                 ORDER BY Interval_Timestamp DESC;
             `;
         }
 
         // Execute the query
-        const [results] = await db.execute<mysql.RowDataPacket[]>(sqlQuery, queryParams);
+        const [results] = await db.execute<mysql.RowDataPacket[]>(sqlQuery, [sensorId, boardId, startTimeFormatted, endTimeFormatted]);
+
+        // Apply unit conversion if needed
+
+
+        // const convertedResults = results.map((row) => convertToImperial(parseFloat((row as { Calculated_Reading: string }).Calculated_Reading), units));
+
+
+        const convertedResults = results.map(row => {
+            const calculatedReading = row.Calculated_Reading ?? 0; // Default to 0 if undefined
+            const unit = units || ''; // Default to empty string if undefined
+            let convertedValue = calculatedReading;
+
+            if (useImperial !== '0') {
+                convertedValue = convertToImperial(calculatedReading, unit);
+            }
+            else {
+                convertedValue = convertDefault(calculatedReading, unit);
+            }
+
+            return {
+                ...row,
+                Test: "hello",
+                Calculated_Reading: convertedValue,
+                Units: useImperial !== '0' ? getImperialUnit(unit) : unit
+            };
+        });
 
         // Return the results
-        res.status(200).json(results);
+        res.status(200).json(convertedResults);
     } catch (err) {
         console.error('Error fetching data:', err);
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+// Helper functions for unit labels
+
+function getImperialUnit(metricUnit: string): string {
+    switch (metricUnit) {
+        case '°C': return '°F';
+        case 'kPa': return 'inHg';
+        case 'kph': return 'mph';
+        case 'mm': return 'in';
+        default: return metricUnit;
     }
 }

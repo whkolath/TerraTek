@@ -836,7 +836,7 @@ const Weather: NextPage = () => {
                     data={windRoseData}
                     layout={layout}
                     useResizeHandler = {true}
-                    style={{ width: "600px", height: "500px" }}
+                    style={{ width: "500px", height: "400px" }}
                   />
                 ) : (
                   <p>Loading wind rose...</p>

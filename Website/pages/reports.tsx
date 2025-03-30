@@ -89,7 +89,7 @@ const Reports = () => {
     // Download type state
     const [downloadType, setDownload] = useState("PNG");
 
-    const [interval, setInterval] = useState("hourly");
+    const [interval, setInterval] = useState("Hourly");
 
     // Selected time span
     const [time, setTime] = useState<DateRange>({
@@ -140,9 +140,9 @@ const Reports = () => {
 
                 // Fetch the data from the API
                 const [response, response2, response3, sensorResponse, boardResponse] = await Promise.all([
-                    fetch(`/api/fetchdata/sensor-data?board=${board}&sensor=${sensor}&calc=${aggregation}&start=${time.start}&end=${time.end}&timeinterval=${interval}`),
-                    board2 && sensor2 ? fetch(`/api/fetchdata/sensor-data?board=${board2}&sensor=${sensor2}&calc=${aggregation2}&start=${time.start}&end=${time.end}&timeinterval=${interval}`) : Promise.resolve({ json: () => [] }),
-                    board3 && sensor3 ? fetch(`/api/fetchdata/sensor-data?board=${board3}&sensor=${sensor3}&calc=${aggregation3}&start=${time.start}&end=${time.end}&timeinterval=${interval}`) : Promise.resolve({ json: () => [] }),
+                    fetch(`/api/fetchdata/sensor-data?board=${board}&sensor=${sensor}&calc=${aggregation}&start=${time.start}&end=${time.end}&timeinterval=${interval}&unit_conversion=${unitType}`),
+                    board2 && sensor2 ? fetch(`/api/fetchdata/sensor-data?board=${board2}&sensor=${sensor2}&calc=${aggregation2}&start=${time.start}&end=${time.end}&timeinterval=${interval}&unit_conversion=${unitType}`) : Promise.resolve({ json: () => [] }),
+                    board3 && sensor3 ? fetch(`/api/fetchdata/sensor-data?board=${board3}&sensor=${sensor3}&calc=${aggregation3}&start=${time.start}&end=${time.end}&timeinterval=${interval}&unit_conversion=${unitType}`) : Promise.resolve({ json: () => [] }),
                     fetch(`/api/sensors`),
                     fetch(`/api/boards`)
                 ]);
@@ -158,7 +158,7 @@ const Reports = () => {
                 setSensorList({
                     Sensor_ID: sensorsData.map((sensorsData: { Sensor_ID: number }) => sensorsData.Sensor_ID),
                     Sensor_Description: sensorsData.map((sensorsData: { Sensor_Description: number }) => sensorsData.Sensor_Description),
-                    Units: sensorsData.map((sensorsData: { Units: number, Sensor_ID: number }) => (unitType && (sensorsData.Sensor_ID == 2 || sensorsData.Sensor_ID == 1)) ? "°F" : sensorsData.Units)
+                    Units: sensorsData.map((sensorsData: { Units: number, Imperial_Units: number, Sensor_ID: number }) => (unitType ? sensorsData.Imperial_Units : sensorsData.Units))
                 });
 
                 setBoardList({
@@ -172,13 +172,7 @@ const Reports = () => {
                     timeZone: "America/Chicago"
                 }));
 
-                let values = data.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
-
-                if (unitType) {
-                    if (sensor == "2" || sensor == "1") {
-                        values = data.map((data: { Calculated_Reading: number }) => data.Calculated_Reading ? data.Calculated_Reading * 9 / 5 + 32 : null);
-                    }
-                }
+                const values = data.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
 
                 const days = data.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
@@ -192,13 +186,7 @@ const Reports = () => {
                     minute: "numeric",
                     timeZone: "America/Chicago"
                 }));
-                let values2 = data2.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
-
-                if (unitType) {
-                    if (sensor == "2" || sensor == "1") {
-                        values2 = data2.map((data: { Calculated_Reading: number }) => data.Calculated_Reading ? data.Calculated_Reading * 9 / 5 + 32 : null);
-                    }
-                }
+                const values2 = data2.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
 
                 const days2 = data2.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
@@ -212,13 +200,7 @@ const Reports = () => {
                     minute: "numeric",
                     timeZone: "America/Chicago"
                 }));
-                let values3 = data3.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
-
-                if (unitType) {
-                    if (sensor == "2" || sensor == "1") {
-                        values3 = data3.map((data: { Calculated_Reading: number }) => data.Calculated_Reading ? data.Calculated_Reading * 9 / 5 + 32 : null);
-                    }
-                }
+                const values3 = data3.map((data: { Calculated_Reading: number }) => data.Calculated_Reading);
 
                 const days3 = data3.map((data: { Interval_Timestamp: string }) => new Date(data.Interval_Timestamp).toLocaleDateString("en-US", {
                     dateStyle: "short",
@@ -612,7 +594,7 @@ const Reports = () => {
                             }} className="shadow-sm hidden md:block" color={quickTimeState == 1 ? "success" : "primary"} radius="sm">Past Day</Button>
                             <Button onPress={() => {
                                 setTime({
-                                    start: new Date(new Date().setDate(new Date().getDay() - 7)),
+                                    start: new Date(new Date().setDate(new Date().getDate() - 7)),
                                     end: new Date()
                                 });
                                 setQuickTimeState(2);
@@ -642,7 +624,7 @@ const Reports = () => {
                                         setQuickTimeState(4);
                                     }} key={1}>Past Day</DropdownItem>
                                     <DropdownItem onAction={() => setTime({
-                                        start: new Date(new Date().setDate(new Date().getDay() - 7)),
+                                        start: new Date(new Date().setDate(new Date().getDate() - 7)),
                                         end: new Date()
                                     })} key={2}>Past Week</DropdownItem>
                                     <DropdownItem onAction={() => setTime({
@@ -658,7 +640,7 @@ const Reports = () => {
                                     className="flex items-center justify-center h-full w-full"
                                     hideTimeZone
                                     label="Custom"
-                                    defaultValue={{
+                                    value={{
                                         start: parseZonedDateTime(DateTime.fromJSDate(time.start).setZone('America/Chicago').toString().replace(/-[0-9]{2}:[0-9]{2}.*$/, "[UTC]")),
                                         end: parseZonedDateTime(DateTime.fromJSDate(time.end).setZone('America/Chicago').toString().replace(/-[0-9]{2}:[0-9]{2}.*$/, "[UTC]")),
                                     }}
@@ -682,10 +664,9 @@ const Reports = () => {
                                         </Button>
                                     </DropdownTrigger>
                                     <DropdownMenu onAction={(key) => setInterval(key.toString())}>
-                                        <DropdownItem key={"none"}>No Aggregation</DropdownItem>
-                                        <DropdownItem key={"halfhour"}>Half Hourly</DropdownItem>
-                                        <DropdownItem key={"hourly"}>Hourly</DropdownItem>
-                                        <DropdownItem key={"daily"}>Daily</DropdownItem>
+                                        <DropdownItem key={"All"}>No Aggregation</DropdownItem>
+                                        <DropdownItem key={"Hourly"}>Hourly</DropdownItem>
+                                        <DropdownItem key={"Daily"}>Daily</DropdownItem>
                                     </DropdownMenu>
                                 </Dropdown>
                             </div>
@@ -695,7 +676,7 @@ const Reports = () => {
                                 <Dropdown className=" w-full">
                                     <DropdownTrigger>
                                         <Button className="shadow-sm w-full" radius="sm" variant="bordered">
-                                            Units
+                                            Units: {unitType ? " Imperial" : " Metric"}
                                         </Button>
                                     </DropdownTrigger>
                                     <DropdownMenu onAction={(key) => setUnitType(Number(key))}>

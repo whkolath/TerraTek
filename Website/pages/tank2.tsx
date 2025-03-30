@@ -34,7 +34,7 @@ type DateRange = {
   const sensor_Temp = "1";
   const sensor_WaterLevel = "10";
   const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
-  const interval = "hourly"; // Options: "halfhour", "hourly", "daily"
+  const interval = "Hourly"; // Options: "All", "Hourly", "Daily"
 
 
   // Adjust states to use SensorReading

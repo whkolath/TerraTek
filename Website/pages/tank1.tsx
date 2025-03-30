@@ -36,7 +36,7 @@ type DateRange = {
   const sensor_pH = "11";
   const sensor_TDC = "9";
   const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
-  const interval = "hourly"; // Options: "halfhour", "hourly", "daily"
+  const interval = "Hourly"; // Options: "All", "Hourly", "Daily"
 
 
   // Adjust states to use SensorReading

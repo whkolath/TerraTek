@@ -134,7 +134,7 @@ const Dashboard = () => {
     const sensor_Humidity = "3"
     const sensor_Pressure = "4"
     const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
-    const interval = "hourly"; // Options: "halfhour", "hourly", "daily"
+    const interval = "Hourly"; // Options: "All", "Hourly", "Daily"
 
     useEffect(() => {
         const fetchFreshWater1Data = async () => {
