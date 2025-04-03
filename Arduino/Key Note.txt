@@ -1,6 +1,18 @@
-Fresh Water:
+Fresh Water 1:
 EUI: 0xa8610a3436268316
 APP KEY: 2842a77ef91afed59af18f6f7f7fb847
+
+Fresh Water 2:
+EUI: 0xa8610a33382d9411
+APP KEY: ba1512b24dc5cfd8d458ff12f381e20c
+
+Fresh Water 3:
+EUI: 0xa8610a3339188011
+APP KEY: 43cbc1441a5ae95fc30b0481ced0b46e
+
+Grey Water:
+EUI: 0xa8610a33383b9411
+APP KEY: 9c61d55d2e1ee088ff44cf0d726b810b
 
 Playa Weather Station:
 EUI: 0xa8610a34362d800f

@@ -1,186 +1,647 @@
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import LiquidFillGauge from "react-liquid-gauge";
+import { color } from "d3-color";
+import { interpolateRgb } from "d3-interpolate";
+import Image from "next/image";
 
 export const PlotlyComponent = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const Dashboard = () => {
+    interface SensorReading {
+        Sensor_Timestamp: string;
+        Sensor_Value: number;
+        Interval_Timestamp: string;
+        Calculated_Reading: number;
+    }
 
-    type Weather = {
-        temperature: number;
-        windspeed: number;
-        weathercode: number;
+    type DateRange = {
+        start: Date;
+        end: Date;
     };
 
-    const [weather, setWeather] = useState<null | Weather>(null);
+
+    type Weather = {
+        weathercode: number | undefined;
+        sunrise: string;
+        sunset: string;
+        precipitation_probability_max: number;
+    };
+
+    const weatherImages: { [key: number]: string } = {
+        0: "/Weather_Images/110805_sun_icon.svg",
+        1: "/Weather_Images/9044965_partly_cloudy_icon.svg",
+        2: "/Weather_Images/9044965_partly_cloudy_icon.svg",
+        3: "/Weather_Images/198562_partly cloud_sun_sunny_grey_clody_icon.svg",
+        45: "/Weather_Images/390496_cloud_fog_sun_icon.svg",
+        48: "/Weather_Images/390496_cloud_fog_sun_icon.svg",
+        51: "/Weather_Images/5719164_cloud_drizzle_rain_icon.svg",
+        53: "/Weather_Images/5719156_cloud_rain_icon.svg",
+        55: "/Weather_Images/5719160_cloud_heavy_rain_icon.svg",
+        61: "/Weather_Images/5719164_cloud_drizzle_rain_icon.svg",
+        63: "/Weather_Images/5719156_cloud_rain_icon.svg",
+        65: "/Weather_Images/5719160_cloud_heavy_rain_icon.svg",
+        71: "/Weather_Images/8520293_snowflake_icon.svg",
+        73: "/Weather_Images/8520293_snowflake_icon.svg",
+        75: "/Weather_Images/8520293_snowflake_icon.svg",
+        80: "/Weather_Images/5719164_cloud_drizzle_rain_icon.svg",
+        81: "/Weather_Images/5719156_cloud_rain_icon.svg",
+        82: "/Weather_Images/5719160_cloud_heavy_rain_icon.svg",
+        95: "/Weather_Images/9045272_thunderstorm_icon.svg",
+        96: "/Weather_Images/9045272_thunderstorm_icon.svg",
+        99: "/Weather_Images/9045272_thunderstorm_icon.svg",
+    };
+
+    const getWeatherImage = (code: number | undefined): string => {
+        const codeNumber = Number(code); // Ensure it's a number
+        return codeNumber in weatherImages ? weatherImages[codeNumber] : "/Weather_Images/2849810_cross_multimedia_error_delite_icon.svg";
+    };
+
+
+    const weatherDescriptions: { [key: number]: string } = {
+        0: "Clear sky",
+        1: "Mainly clear",
+        2: "Partly cloudy",
+        3: "Overcast",
+        45: "Fog",
+        48: "Depositing rime fog",
+        51: "Drizzle: Light intensity",
+        53: "Drizzle: Moderate intensity",
+        55: "Drizzle: Dense intensity",
+        56: "Freezing Drizzle: Light intensity",
+        57: "Freezing Drizzle: Dense intensity",
+        61: "Rain: Slight intensity",
+        63: "Rain: Moderate intensity",
+        65: "Rain: Heavy intensity",
+        66: "Freezing Rain: Light intensity",
+        67: "Freezing Rain: Heavy intensity",
+        71: "Snow fall: Slight intensity",
+        73: "Snow fall: Moderate intensity",
+        75: "Snow fall: Heavy intensity",
+        77: "Snow grains",
+        80: "Rain showers: Slight",
+        81: "Rain showers: Moderate",
+        82: "Rain showers: Violent",
+        85: "Snow showers: Slight",
+        86: "Snow showers: Heavy",
+        95: "Thunderstorm: Slight or moderate",
+        96: "Thunderstorm with slight hail",
+        99: "Thunderstorm with heavy hail"
+    };
+
+    const getWeatherDescription = (code: number | undefined): string => {
+        return code !== undefined && weatherDescriptions[code] ? weatherDescriptions[code] : "Unknown";
+    };
+
+    const [weather, setWeather] = useState<Weather | null>(null);
+    const [waterLevelData, setWaterLevelData] = useState<number | null>(null);
+    const [waterLevel2Data, setWaterLevel2Data] = useState<number | null>(null);
+    const [waterLevel3Data, setWaterLevel3Data] = useState<number | null>(null);
+    const [TempData, setTempData] = useState<number | null>(null);
+    const [WSData, setWSData] = useState<number | null>(null);
+    const [WDData, setWDData] = useState<number | null>(null);
+    const [HumdityData, setHumdityData] = useState<number | null>(null);
+    const [PressureData, setPressureData] = useState<number | null>(null);
+
+    // Helper: Format a time string to Nazareth, TX local time ("America/Chicago")
+    function formatTimeToNazareth(timeString: string): string {
+        const date = new Date(timeString);
+        return date.toLocaleTimeString("en-US", {
+            timeZone: "America/Chicago",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }
+
+    const [time] = useState<DateRange>({
+        start: new Date(new Date().setMonth(new Date().getMonth() - 1)), // One month ago
+        end: new Date(), // Current date
+    });
+
+    const [freshWater1Data, setFreshWater1Data] = useState<SensorReading[] | null>(null);
+    const [freshWater2Data, setFreshWater2Data] = useState<SensorReading[] | null>(null);
+    const [freshWater3Data, setFreshWater3Data] = useState<SensorReading[] | null>(null);
+    const [greyWaterData, setGreyWaterData] = useState<SensorReading[] | null>(null);
+    const board_weatherstation = "0xa8610a34362d800f";
+    const board_freshwater1 = "0xa8610a3436268316";
+    const board_freshwater2 = "0xa8610a33382d9411";
+    const board_freshwater3 = "0xa8610a3339188011";
+    const board_greywater = "0xa8610a3436268316";
+    const sensor_WaterLevel = "10"; // Replace with actual sensor ID
+    const sensor_Temp = "1"
+    const sensor_WindS = "6"
+    const sensor_WindD = "7"
+    const sensor_Humidity = "3"
+    const sensor_Pressure = "4"
+    const aggregation = "AVG"; // AVG, MIN, MAX, MEDIAN, SUM
+    const interval = "Hourly"; // Options: "All", "Hourly", "Daily"
 
     useEffect(() => {
-        // const fetchData = async () => {
-        //     try {
-        //         const [response, sensorResponse, boardResponse] = await Promise.all([
-        //             fetch("/api/latest/0x0A"),
-        //             fetch(`/api/boards`),
-        //         ]);
-
-        //         const textResponse = await response.text();
-        //         const textSensors = await sensorResponse.text();
-        //         const textBoards = await boardResponse.text();
-
-        //         let data, sensorsData, boardsData;
-
-        //         try {
-        //             data = JSON.parse(textResponse);
-        //             sensorsData = JSON.parse(textSensors);
-        //             boardsData = JSON.parse(textBoards);
-        //         } catch (error) {
-        //             console.error("Invalid JSON received:", { textResponse, textSensors, textBoards });
-        //             return;
-        //         }
-
-        //         setSensorList({
-        //             Sensor_ID: sensorsData.map((s: { Sensor_ID: number }) => s.Sensor_ID),
-        //             Sensor_Description: sensorsData.map((s: { Sensor_Description: string }) => s.Sensor_Description),
-        //             Units: sensorsData.map((s: { Units: string; Sensor_ID: number }) => (unitType && s.Sensor_ID == 2 ? "°F" : s.Units)),
-        //         });
-
-        //         setBoardList({
-        //             Board_ID: boardsData.map((b: { Board_ID: string }) => b.Board_ID),
-        //             Board_Description: boardsData.map((b: { Board_Description: string }) => b.Board_Description),
-        //         });
-
-        //         setDataset({
-        //             dates: data.map((d: { Hourly_Timestamp: string }) => new Date(d.Hourly_Timestamp)),
-        //             values: data.map((d: { Average_Reading: number }) => (unitType && sensor == "2" ? d.Average_Reading * 9 / 5 + 32 : d.Average_Reading)),
-        //             days: data.map((d: { Hourly_Timestamp: string }) =>
-        //                 new Date(d.Hourly_Timestamp).toLocaleDateString("en-US", { dateStyle: "short", timeZone: "America/Chicago" })
-        //             ),
-        //             hours: data.map((d: { Hourly_Timestamp: string }) =>
-        //                 new Date(d.Hourly_Timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", timeZone: "America/Chicago" })
-        //             ),
-        //         });
-        //     } catch (error) {
-        //         console.error("Error fetching data:", error);
-        //     }
-        // };
-        
-
-
-        const fetchWeather = async () => {
+        const fetchFreshWater1Data = async () => {
             try {
                 const response = await fetch(
-                    "https://api.open-meteo.com/v1/forecast?latitude=34.5442&longitude=-102.1027&current_weather=true"
-                    //https://api.open-meteo.com/v1/forecast?latitude=34.5442&longitude=-102.1027&hourly=temperature_2m,dew_point_2m,rain,wind_speed_180m,wind_direction_180m,wind_gusts_10m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=ms&timezone=America%2FChicago
+                    `/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`
                 );
-                 const text = await response.text();
 
-            //     try {
-                     const data = JSON.parse(text);
-                     setWeather(data.current_weather);
-            //     } catch (error) {
-            //         console.error("Invalid weather JSON:", text);
-            //     }
-             } catch (error) {
-                 console.error("Error fetching weather data:", error);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.statusText}`);
+                }
+
+                const data: SensorReading[] = await response.json();
+                setFreshWater1Data(data);
+            } catch (error) {
+                console.error("Error fetching fresh water data:", error);
             }
         };
 
-        //fetchData();
+        fetchFreshWater1Data();
+    }, [time]);
+
+    useEffect(() => {
+        const fetchFreshWater2Data = async () => {
+            try {
+                const response = await fetch(
+                    `/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.statusText}`);
+                }
+
+                const data: SensorReading[] = await response.json();
+                setFreshWater2Data(data);
+            } catch (error) {
+                console.error("Error fetching fresh water data:", error);
+            }
+        };
+
+        fetchFreshWater2Data();
+    }, [time]);
+
+    useEffect(() => {
+        const fetchFreshWater3Data = async () => {
+            try {
+                const response = await fetch(
+                    `/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.statusText}`);
+                }
+
+                const data: SensorReading[] = await response.json();
+                setFreshWater3Data(data);
+            } catch (error) {
+                console.error("Error fetching fresh water data:", error);
+            }
+        };
+
+        fetchFreshWater3Data();
+    }, [time]);
+
+    
+
+    useEffect(() => {
+        const fetchGreyWaterData = async () => {
+            try {
+                const response = await fetch(
+                    `/api/fetchdata/sensor-data?board=${board_greywater}&sensor=${sensor_WaterLevel}&calc=${aggregation}&start=${time.start.toISOString()}&end=${time.end.toISOString()}&timeinterval=${interval}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.statusText}`);
+                }
+
+                const data: SensorReading[] = await response.json();
+                setGreyWaterData(data);
+            } catch (error) {
+                console.error("Error fetching fresh water data:", error);
+            }
+        };
+
+        fetchGreyWaterData();
+    }, [time]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const [reading2, reading3, reading4, reading5, reading6, reading7, reading8, reading9] = await Promise.all([
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1`), // Water Level1
+                fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Temp}&calc=${aggregation}&timeframe=1`),  // Temp
+                fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindS}&calc=${aggregation}&timeframe=1`),  // Wind Speed
+                fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_WindD}&calc=${aggregation}&timeframe=1`),  // Wind Direction
+                fetch(`/api/fetchdata/sensor-data?board=${board_weatherstation}&sensor=${sensor_Humidity}&calc=${aggregation}&timeframe=1`),  // Humidity
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater1}&sensor=${sensor_Pressure}&calc=${aggregation}&timeframe=1`), // Pressure
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater2}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1`), // Water Level 2
+                fetch(`/api/fetchdata/sensor-data?board=${board_freshwater3}&sensor=${sensor_WaterLevel}&calc=${aggregation}&timeframe=1`), // Water Level 3
+            ]);
+    
+            // Parse the JSON from each response
+            const data2 = await reading2.json();
+            const data3 = await reading3.json();
+            const data4 = await reading4.json();
+            const data5 = await reading5.json();
+            const data6 = await reading6.json();
+            const data7 = await reading7.json();
+            const data8 = await reading8.json();
+            const data9 = await reading9.json();
+    
+            setWaterLevelData(data2?.length > 0 ? parseFloat(data2[0].Calculated_Reading) : null);
+            setTempData(data3?.length > 0 ? parseFloat(data3[0].Calculated_Reading) : null);
+            setWSData(data4?.length > 0 ? parseFloat(data4[0].Calculated_Reading) : null);
+            setWDData(data5?.length > 0 ? parseFloat(data5[0].Calculated_Reading) : null);
+            setHumdityData(data6?.length > 0 ? parseFloat(data6[0].Calculated_Reading) : null);
+            setPressureData(data7?.length > 0 ? parseFloat(data7[0].Calculated_Reading) : null);
+            setWaterLevel2Data(data8?.length > 0 ? parseFloat(data8[0].Calculated_Reading) : null);
+            setWaterLevel3Data(data9?.length > 0 ? parseFloat(data9[0].Calculated_Reading) : null);
+        };
+    
+        fetchData();
+    }, []);
+    
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=34.5442&longitude=-102.1027&daily=weathercode,sunrise,sunset,precipitation_probability_max&current_weather=true&timezone=America%2FChicago");
+                const data = await response.json();
+                console.log("Fetched weather data:", data); // Debugging
+                if (data.daily) {
+                    setWeather({
+                        weathercode: data.daily.weathercode?.[0] ?? data.current_weather?.weathercode,
+                        sunrise: data.daily.sunrise?.[0] ?? "N/A",
+                        sunset: data.daily.sunset?.[0] ?? "N/A",
+                        precipitation_probability_max: data.daily.precipitation_probability_max?.[0] ?? 0,
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
+            }
+        };
         fetchWeather();
-    }, //[time, sensor, unitType]
-);
+    }, []);
+
+
+
+    
+
+    // Conversion helper functions
+    function celsiusToFahrenheit(celsius: number): number {
+        return (celsius * 9) / 5 + 32;
+    }
+    function kphToMph(kph: number): number {
+        return kph * 0.621371;
+    }
+    // Reverse wind direction by adding 180° before converting to cardinal direction.
+    function convertWindDirection(degree: number): string {
+        const reversedDegree = (degree + 180) % 360;
+        const directions = [
+            "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
+        ];
+        const index = Math.floor((reversedDegree + 11.25) / 22.5) % 16;
+        return directions[index];
+    }
+
+    const waterLevel = Math.round(waterLevelData ?? 0);
+    const waterLevel2 = Math.round(waterLevel2Data ?? 0);
+    const waterLevel3 = Math.round(waterLevel3Data ?? 0);
+    const predictedWaterLevel = Math.min(waterLevel + 10, 100);
+
+    // Liquid gauge color logic
+    const startColor = "#6495ed";
+    const endColor = "#dc143c";
+    const interpolate = interpolateRgb(startColor, endColor);
+
+    function renderLiquidGauge(value: number, forcedColor?: string) {
+        const fillColor = forcedColor ? forcedColor : interpolate(value / 100);
+        const gradientStops = [
+            {
+                key: "0%",
+                stopColor: color(fillColor)?.darker(0.5).toString(),
+                stopOpacity: 1,
+                offset: "0%",
+            },
+            {
+                key: "50%",
+                stopColor: fillColor,
+                stopOpacity: 0.75,
+                offset: "50%",
+            },
+            {
+                key: "100%",
+                stopColor: color(fillColor)?.brighter(0.5).toString(),
+                stopOpacity: 0.5,
+                offset: "100%",
+            },
+        ];
+
+        return (
+            <LiquidFillGauge
+                style={{ margin: "0 auto" }}
+                width={300}
+                height={300}
+                value={value}
+                percent="%"
+                textSize={1}
+                textOffsetX={0}
+                textOffsetY={0}
+                riseAnimation
+                waveAnimation
+                waveFrequency={2}
+                waveAmplitude={1}
+                gradient
+                gradientStops={gradientStops}
+                circleStyle={{
+                    fill: fillColor,
+                }}
+                waveStyle={{
+                    fill: fillColor,
+                }}
+                textStyle={{
+                    fill: color("#444")?.toString(),
+                    fontFamily: "Arial",
+                }}
+                waveTextStyle={{
+                    fill: color("#fff")?.toString(),
+                    fontFamily: "Arial",
+                }}
+            />
+        );
+    }
+
+    function renderFreshWater1ScatterPlot() {
+        if (!freshWater1Data) return <div>Loading sensor data...</div>;
+        if (freshWater1Data.length === 0) return <div>No Fresh Water data available.</div>;
+
+        const xValues = freshWater1Data.map((reading) => reading.Interval_Timestamp); // Updated field
+        const yValues = freshWater1Data.map((reading) => reading.Calculated_Reading); // Updated field
+
+        return (
+            <PlotlyComponent
+                data={[
+                    {
+                        type: "scatter",
+                        mode: "lines+markers", // Use lines for better trend visualization
+                        x: xValues,
+                        y: yValues,
+                        marker: { color: "blue" },
+                        line: { shape: "spline" }, // Smooth the line
+                    },
+                ]}
+                layout={{
+                    autosize: true,
+                    margin: { t: 20, r: 20, l: 40, b: 40 },
+                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    yaxis: { title: "Fresh Water Level (AVG)" },
+                    paper_bgcolor: '#f1f5f9',
+                    plot_bgcolor: '#f1f5f9',
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                useResizeHandler
+                style={{ width: "100%", height: "300px" }} // Increased height for better visibility
+            />
+        );
+    }
+
+    function renderFreshWater2ScatterPlot() {
+        if (!freshWater2Data) return <div>Loading sensor data...</div>;
+        if (freshWater2Data.length === 0) return <div>No Fresh Water data available.</div>;
+
+        const xValues = freshWater2Data.map((reading) => reading.Interval_Timestamp); // Updated field
+        const yValues = freshWater2Data.map((reading) => reading.Calculated_Reading); // Updated field
+
+        return (
+            <PlotlyComponent
+                data={[
+                    {
+                        type: "scatter",
+                        mode: "lines+markers", // Use lines for better trend visualization
+                        x: xValues,
+                        y: yValues,
+                        marker: { color: "blue" },
+                        line: { shape: "spline" }, // Smooth the line
+                    },
+                ]}
+                layout={{
+                    autosize: true,
+                    margin: { t: 20, r: 20, l: 40, b: 40 },
+                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    yaxis: { title: "Fresh Water Level (AVG)" },
+                    paper_bgcolor: '#f1f5f9',
+                    plot_bgcolor: '#f1f5f9',
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                useResizeHandler
+                style={{ width: "100%", height: "300px" }} // Increased height for better visibility
+            />
+        );
+    }
+
+    function renderFreshWater3ScatterPlot() {
+        if (!freshWater3Data) return <div>Loading sensor data...</div>;
+        if (freshWater3Data.length === 0) return <div>No Fresh Water data available.</div>;
+
+        const xValues = freshWater3Data.map((reading) => reading.Interval_Timestamp); // Updated field
+        const yValues = freshWater3Data.map((reading) => reading.Calculated_Reading); // Updated field
+
+        return (
+            <PlotlyComponent
+                data={[
+                    {
+                        type: "scatter",
+                        mode: "lines+markers", // Use lines for better trend visualization
+                        x: xValues,
+                        y: yValues,
+                        marker: { color: "blue" },
+                        line: { shape: "spline" }, // Smooth the line
+                    },
+                ]}
+                layout={{
+                    autosize: true,
+                    margin: { t: 20, r: 20, l: 40, b: 40 },
+                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    yaxis: { title: "Fresh Water Level (AVG)" },
+                    paper_bgcolor: '#f1f5f9',
+                    plot_bgcolor: '#f1f5f9',
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                useResizeHandler
+                style={{ width: "100%", height: "300px" }} // Increased height for better visibility
+            />
+        );
+    }
+
+    function renderGreyWaterScatterPlot() {
+        if (!greyWaterData) return <div>Loading sensor data...</div>;
+        if (greyWaterData.length === 0) return <div>No Fresh Water data available.</div>;
+
+        const xValues = greyWaterData.map((reading) => reading.Interval_Timestamp); // Updated field
+        const yValues = greyWaterData.map((reading) => reading.Calculated_Reading); // Updated field
+
+        return (
+            <PlotlyComponent
+                data={[
+                    {
+                        type: "scatter",
+                        mode: "lines+markers", // Use lines for better trend visualization
+                        x: xValues,
+                        y: yValues,
+                        marker: { color: "blue" },
+                        line: { shape: "spline" }, // Smooth the line
+                    },
+                ]}
+                layout={{
+                    autosize: true,
+                    margin: { t: 20, r: 20, l: 40, b: 40 },
+                    xaxis: { title: "Timestamp", type: "date" }, // Format x-axis as date
+                    yaxis: { title: "Fresh Water Level (AVG)" },
+                    paper_bgcolor: '#f1f5f9',
+                    plot_bgcolor: '#f1f5f9',
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                useResizeHandler
+                style={{ width: "100%", height: "300px" }} // Increased height for better visibility
+            />
+        );
+    }
+
 
     return (
-        <div className="w-full h-full flex">
-            {/* Main Content */}
-            <div className="flex-grow p-6 grid grid-cols-2 gap-3">
-                {/* Fresh Water Section */}
-                <div className="bg-white shadow-lg rounded-lg p-4 flex flex-col items-center w-full h-full">
-                    <h2 className="text-lg font-bold">Fresh Water</h2>
-                    <div className="w-6 h-6 bg-blue-300 rounded-full mt-4"></div>
-                    <div className="mt-2">Level Percentage</div>
-                    <Image src="/tank_UI.svg" alt="Tank" width={250} height={250} />
-                    <div className="w-full h-[400px] bg-slate-100 shadow-sm rounded-md flex flex-col items-center">
-                        <PlotlyComponent
-                            data={[
-                                {
-                                    //x: dataset.dates,
-                                    //y: dataset.values,
-                                    type: "scatter",
-                                    mode: "lines+markers",
-                                    marker: { color: "blue" },
-                                    name: "Fresh Water Level"
-                                }
-                            ]}
-                            layout={{
-                                title: "Daily Water Level",
-                                autosize: true,
-                                margin: { t: 40, l: 50, r: 20, b: 40 }
-                            }}
-                            useResizeHandler={true}
-                            className="w-full h-full"
-                        />
-                    </div>
+        <div className="w-full min-h-screen flex flex-col md:flex-row overflow-hidden">
+          {/* Main Sensor Grid */}
+          <div className="flex-grow p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Fresh Water 1 Section */}
+            <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
+              <h2 className="text-center text-xl font-semibold font-mono">Fresh Water 1</h2>
+              {renderLiquidGauge(waterLevel, "blue")}
+              
+              <div className="w-full mt-4">
+                <h3 className="text-md font-semibold font-mono">Fresh Water 1 Scatter Plot</h3>
+                <div className="bg-slate-300 shadow-md rounded-md p-3">
+                  {renderFreshWater1ScatterPlot()}
                 </div>
-
-                {/* Grey Water Section */}
-                <div className="bg-white shadow-lg rounded-lg p-4 flex flex-col items-center w-full h-full">
-                    <h2 className="text-lg font-bold">Grey Water</h2>
-                    <div className="w-6 h-6 bg-gray-400 rounded-full mt-4"></div>
-                    <div className="mt-2">Level Percentage</div>
-                    <Image src="/tank_UI.svg" alt="Tank" width={250} height={250} />
-                    <div className="w-full h-[400px] bg-slate-300 shadow-sm rounded-md flex flex-col items-center">
-                        <PlotlyComponent
-                            data={[
-                                {
-                                    //x: dataset.dates,
-                                    //y: dataset.values,
-                                    type: "scatter",
-                                    mode: "lines+markers",
-                                    marker: { color: "gray" },
-                                    name: "Grey Water Level"
-                                }
-                            ]}
-                            layout={{
-                                title: "Daily Water Level",
-                                autosize: true,
-                                margin: { t: 40, l: 50, r: 20, b: 40 }
-                            }}
-                            useResizeHandler={true}
-                            className="w-full h-full"
-                        />
-                    </div>
+              </div>
+            </div>
+      
+            {/* Grey Water Section */}
+            <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
+              <h2 className="text-center text-xl font-semibold font-mono">Grey Water</h2>
+              {renderLiquidGauge(predictedWaterLevel, "grey")}
+              
+              <div className="w-full mt-4">
+                <h3 className="text-md font-semibold font-mono">Grey Water Scatter Plot</h3>
+                <div className="bg-slate-300 shadow-md rounded-md p-3">
+                  {renderGreyWaterScatterPlot()}
                 </div>
-
-                {/* About Section */}
-                <div className="col-span-2 bg-white shadow-lg rounded-lg p-4">
-                    <h2 className="text-lg font-bold">About</h2>
-                    <p className="mt-2 text-gray-600">Description about the system and its functionalities.</p>
-                </div>
-
-                {/* Purpose Section */}
-                <div className="col-span-2 bg-white shadow-lg rounded-lg p-4">
-                    <h2 className="text-lg font-bold">Purpose</h2>
-                    <p className="mt-2 text-gray-600">Explanation of the purpose and objectives of the system.</p>
-                </div>
+              </div>
             </div>
 
-            {/* Weather Plugin */}
-            <div className="w-1/6 h-screen p-4 bg-slate-100 shadow-sm rounded-md flex flex-col">
-                <h2 className="text-lg font-bold">Weather Plug-in</h2>
-                <div className="w-full h-full mt-4 bg-gray-300 flex items-center justify-center text-center p-2">
-                    {weather ? (
-                        <div>
-                            <p>Temperature: {weather.temperature}°C</p>
-                            <p>Wind Speed: {weather.windspeed} km/h</p>
-                            <p>Condition: {weather.weathercode}</p>
-                        </div>
-                    ) : (
-                        "Loading weather..."
-                    )}
+            {/* Fresh Water 1 Section */}
+            <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
+              <h2 className="text-center text-xl font-semibold font-mono">Fresh Water 2</h2>
+              {renderLiquidGauge(waterLevel2, "blue")}
+              
+              <div className="w-full mt-4">
+                <h3 className="text-md font-semibold font-mono">Fresh Water 2 Scatter Plot</h3>
+                <div className="bg-slate-300 shadow-md rounded-md p-3">
+                  {renderFreshWater2ScatterPlot()}
                 </div>
+              </div>
             </div>
+
+            {/* Fresh Water 1 Section */}
+            <div className="bg-slate-100 shadow-lg rounded-lg p-4 flex flex-col items-center">
+              <h2 className="text-center text-xl font-semibold font-mono">Fresh Water 3</h2>
+              {renderLiquidGauge(waterLevel3, "blue")}
+              
+              <div className="w-full mt-4">
+                <h3 className="text-md font-semibold font-mono">Fresh Water 3 Scatter Plot</h3>
+                <div className="bg-slate-300 shadow-md rounded-md p-3">
+                  {renderFreshWater3ScatterPlot()}
+                </div>
+              </div>
+            </div>
+      
+          </div>
+      
+          {/* Weather Plug-in Section */}
+<div className="w-full md:w-1/6 h-fit flex items-center justify-center">
+  <div className="w-full max-w-md bg-slate-100 shadow-lg p-4 rounded-md flex-grow flex-col overflow-y-auto">
+    <h2 className="text-center text-xl font-semibold font-mono">Weather</h2>
+
+    <div className="w-full h-screen mt-4 bg-gray-300 p-4 rounded-lg shadow-md flex flex-col items-center text-center justify-center flew-grow">
+      {weather ? (
+        <div className="flex flex-col flew-grow items-center space-y-4">
+          
+          {/* Daily Weather */}
+          <div className="flex flex-col items-center">
+            <strong className="text-lg">Daily:</strong>
+            <Image
+              src={getWeatherImage(weather.weathercode)}
+              width={50}
+              height={50}
+              className="mb-2"
+              alt="Weather Condition"
+            />
+            <p>{getWeatherDescription(weather.weathercode)}</p>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/9040596_sunrise_icon.svg"} width={30} height={30} alt="Sunrise" />
+              <p>Sunrise: {formatTimeToNazareth(weather.sunrise)}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/8666700_sunset_icon.svg"} width={30} height={30} alt="Sunset" />
+              <p>Sunset: {formatTimeToNazareth(weather.sunset)}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/727683_rain_water_cloud_drop_forecast_icon.svg"} width={30} height={30} alt="Precipitation" />
+              <p>Precipitation: {weather.precipitation_probability_max}%</p>
+            </div>
+          </div>
+
+          {/* Current Weather */}
+          <div className="flex flex-col items-center">
+            <strong className="text-lg">Current:</strong>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/8665892_temperature_half_icon.svg"} width={25} height={25} alt="Temperature" />
+              <p>Temperature: {TempData ? celsiusToFahrenheit(TempData).toFixed(2) : "Loading..."} °F</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/9024034_wind_fill_icon.svg"} width={30} height={30} alt="Wind Speed" />
+              <p>Wind Speed: {WSData ? kphToMph(WSData).toFixed(2) : "Loading..."} mph</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/8875188_wind_direction_arrow_icon.svg"} width={30} height={30} alt="Wind Direction" />
+              <p>Wind Direction: {WDData ? convertWindDirection(WDData) : "Loading..."}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/9132537_humidity_air conditining_ac_conditioner_split ac_icon.svg"} width={30} height={30} alt="Humidity" />
+              <p>Humidity: {HumdityData ? HumdityData.toFixed(2) : "Loading..."}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Image src={"/Weather_Images/809411_gauge_indication_indicator_miscellaneous_pressure_icon.svg"} width={30} height={30} alt="Pressure" />
+              <p>Pressure: {PressureData ? PressureData.toFixed(2) : "Loading..."}</p>
+            </div>
+          </div>
         </div>
-    );
+      ) : (
+        "Loading weather..."
+      )}
+    </div>
+  </div>
+</div>
+
+          </div>
+      );
+      
 };
 
 export default Dashboard;

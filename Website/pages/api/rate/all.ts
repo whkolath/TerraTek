@@ -19,7 +19,7 @@ export default async function handler(
 ): Promise<void> {
     try {
 
-        const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT s.Sensor_Description, b.Board_Description, COUNT(*) AS Count
+        const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT s.Sensor_Description, b.Board_Description, COUNT(*) AS Count, MAX(CASE WHEN r.Sensor_Timestamp > NOW() - INTERVAL 5 MINUTE THEN 1 ELSE 0 END) AS Online
                                                                         FROM Readings r
                                                                     JOIN Sensors s ON r.Sensor_ID = s.Sensor_ID
                                                                     JOIN Boards b ON r.Board_ID = b.Board_ID

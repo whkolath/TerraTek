@@ -21,21 +21,22 @@ export default async function handler(
 
         const range = req.query.span;
         const [results] = await db.execute<mysql.RowDataPacket[]>(`SELECT 
-                                                                        d.TIMESTAMP AS Hourly_Timestamp, r.Number_Reading
-                                                                    FROM
-                                                                        Dates d
-                                                                            LEFT JOIN
-                                                                        (SELECT 
-                                                                            COUNT(r.Sensor_Value) AS Number_Reading,
-                                                                                DATE_FORMAT(r.Sensor_Timestamp, '%Y-%m-%d %H:00:00') AS Hourly_Timestamp
-                                                                        FROM
-                                                                            Readings r
-                                                                        WHERE
-                                                                            r.Sensor_Timestamp BETWEEN (NOW() - INTERVAL ? HOUR) AND NOW()
-                                                                        GROUP BY Hourly_Timestamp) r ON d.TIMESTAMP = r.Hourly_Timestamp
-                                                                    WHERE
-                                                                        d.TIMESTAMP BETWEEN (NOW() - INTERVAL ? HOUR) AND NOW()
-                                                                    ORDER BY d.TIMESTAMP DESC;`, [range, range]);
+                                        d.TIMESTAMP AS Hourly_Timestamp, 
+                                        COALESCE(r.Number_Reading, 0) AS Number_Reading
+                                        FROM
+                                        Dates d
+                                            LEFT JOIN
+                                        (SELECT 
+                                            COUNT(r.Sensor_Value) AS Number_Reading,
+                                            DATE_FORMAT(r.Sensor_Timestamp, '%Y-%m-%d %H:00:00') AS Hourly_Timestamp
+                                        FROM
+                                            Readings r
+                                        WHERE
+                                            r.Sensor_Timestamp BETWEEN (NOW() - INTERVAL ? HOUR) AND NOW()
+                                        GROUP BY Hourly_Timestamp) r ON d.TIMESTAMP = r.Hourly_Timestamp
+                                        WHERE
+                                        d.TIMESTAMP BETWEEN (NOW() - INTERVAL ? HOUR) AND NOW()
+                                        ORDER BY d.TIMESTAMP DESC;`, [range, range]);
         res.status(200).json(results);
     } catch (err) {
         console.error('Error connecting to the database or fetching data:', err);

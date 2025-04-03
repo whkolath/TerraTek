@@ -1,5 +1,10 @@
 {
   "dependencies": {
+    "date-fns": "^4.1.0",
+    "luxon": "^3.5.0",
     "react-color-palette": "^7.3.0"
+  },
+  "devDependencies": {
+    "@types/date-fns": "^2.6.3"
   }
 }
