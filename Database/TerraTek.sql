@@ -7,6 +7,9 @@ drop table IF EXISTS Readings;
 drop table IF EXISTS Sensor_Errors;
 SET FOREIGN_KEY_CHECKS=1;
 
+CREATE TABLE Dates (
+    TIMESTAMP TIMESTAMP PRIMARY KEY
+);
 
 CREATE TABLE Boards (
     Board_ID VARCHAR(255) NOT NULL,
@@ -42,6 +45,17 @@ CREATE TABLE Readings (
 	CONSTRAINT Readings_FK3 FOREIGN KEY (Error_ID)
         REFERENCES Sensor_Errors (Error_ID)
 );
+
+DELIMITER //
+CREATE PROCEDURE FillDateTable(startDate DATETIME, endDate DATETIME) BEGIN
+WHILE startDate <= endDate DO
+    INSERT INTO Dates (timestamp) VALUES (startDate);         
+    SET startDate = DATE_ADD(startDate, INTERVAL 1 hour);
+END WHILE; END//
+DELIMITER ;
+
+CALL FillDateTable('2020-01-01', '2050-01-01');
+
 
 -- ************************Boards************************
 INSERT INTO Boards  (Board_ID, Board_Description)

@@ -2,10 +2,10 @@ import mysql from 'mysql2/promise';
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-type responseItemType = {
-    id: string;
-    name: string;
-}
+// type responseItemType = {
+//     id: string;
+//     name: string;
+// }
 
 export default async function handler(
     req: NextApiRequest,
